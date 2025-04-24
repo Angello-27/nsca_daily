@@ -17,44 +17,41 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  // 1) Aquí guardas la lista de resultados:
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
+  // 2) Suscripción a Stream<List<ConnectivityResult>>
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     initConnectivity();
 
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(
-              _updateConnectionStatus
-                  as void Function(List<ConnectivityResult> event)?,
-            )
-            as StreamSubscription<ConnectivityResult>;
+    // 3) 'onConnectivityChanged' emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
+  // 4) Ahora devuelve una lista
   Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-
+    List<ConnectivityResult> results;
     try {
-      result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
+      results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
+      debugPrint('Error al comprobar conectividad: $e');
       return;
     }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+    if (!mounted) return;
+    _updateConnectionStatus(results);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  // 5) Recibe la lista completa
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 
@@ -66,9 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 6) Comprueba el primer elemento para ver si hay conexión
+    final bool hasConnection =
+        _connectionStatus.isNotEmpty &&
+        _connectionStatus.first != ConnectivityResult.none;
+
     return SingleChildScrollView(
       child:
-          _connectionStatus == ConnectivityResult.none
+          !hasConnection
               ? Center(
                 child: Column(
                   children: [

@@ -38,44 +38,39 @@ class _FilterWidgetState extends State<FilterWidget> {
   String _selectedLanguage = 'all';
   String _selectedRating = 'all';
 
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  // 1) Estado como lista
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  // 2) Suscripción a Stream<List<ConnectivityResult>>
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     initConnectivity();
-
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(
-              _updateConnectionStatus
-                  as void Function(List<ConnectivityResult> event)?,
-            )
-            as StreamSubscription<ConnectivityResult>;
+    // 3) onConnectivityChanged ahora emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
+  // 4) initConnectivity devuelve Future<List<ConnectivityResult>>
   Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-
+    List<ConnectivityResult> results;
     try {
-      result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
+      results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
+      debugPrint('Error comprobando conectividad: $e');
       return;
     }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+    if (!mounted) return;
+    _updateConnectionStatus(results);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  // 5) Callback que recibe la lista
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 
@@ -169,480 +164,414 @@ class _FilterWidgetState extends State<FilterWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final catData = Provider.of<Categories>(context, listen: false).items;
-    catData.insert(
-      0,
-      Category(
-        id: 0,
-        title: 'All Category',
-        thumbnail: null,
-        numberOfCourses: null,
-        numberOfSubCategories: null,
+    final bool hasConnection = _hasConnection();
+
+    // 1) Si estamos cargando INICIAL y no hay red:
+    if (_isLoading && !hasConnection) {
+      return _noConnectionView();
+    }
+
+    // 2) Ponemos a punto las listas de categorías y lenguajes:
+    _prepareDropdownData(context);
+
+    // 3) Si seguimos cargando (pero hay red), mostramos spinner:
+    if (_isLoading) {
+      return _loadingView();
+    }
+
+    // 4) Finalmente, devolvemos la UI principal:
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 25),
+            _buildAppBar(),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: _buildFilterForm(context),
+            ),
+          ],
+        ),
       ),
     );
-    //print(catData);
-    final langData = Provider.of<Languages>(context, listen: false).items;
-    langData.insert(
-      0,
-      Language(id: 0, value: 'all', displayedValue: 'All Language'),
-    );
-    final allCategory =
-        Provider.of<Categories>(context, listen: false).allItems;
-    allCategory.insert(
-      0,
-      AllCategory(id: 0, title: 'All Category', subCategory: data),
-    );
-    return _isLoading
-        ? _connectionStatus == ConnectivityResult.none
-            ? Center(
-              child: Column(
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * .15),
-                  Image.asset(
-                    "assets/images/no_connection.png",
-                    height: MediaQuery.of(context).size.height * .35,
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Text('There is no Internet connection'),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(4.0),
-                    child: Text('Please check your Internet connection'),
-                  ),
-                ],
-              ),
-            )
-            : Center(
-              child: CircularProgressIndicator(
-                color: kPrimaryColor.withOpacity(0.7),
-              ),
-            )
-        : Scaffold(
-          backgroundColor: kBackgroundColor,
-          body: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                const SizedBox(height: 25),
-                AppBar(
-                  automaticallyImplyLeading: false,
-                  elevation: 0.5,
-                  title: const Text(
-                    'Filter Courses',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: kTextColor,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  iconTheme: const IconThemeData(
-                    color: kSecondaryColor, //change your color here
-                  ),
-                  backgroundColor: kBackgroundColor,
-                  actions: <Widget>[
-                    IconButton(
-                      icon: const Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.black38,
-                        size: 20,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  width: double.infinity,
-                  child: Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Category',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                value: _selectedCategory,
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                underline: const SizedBox(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedSubCat = null;
-                                    _selectedCategory = value.toString();
-                                    // print(allCategory.indexOf(value));
-                                  });
-                                },
-                                isExpanded: true,
-                                items:
-                                    allCategory.map((cd) {
-                                      return DropdownMenuItem(
-                                        value:
-                                            cd.id == 0
-                                                ? 'all'
-                                                : cd.id.toString(),
-                                        onTap: () {
-                                          setState(() {
-                                            subIndex = allCategory.indexOf(cd);
-                                          });
-                                        },
-                                        child: Text(
-                                          cd.title.toString(),
-                                          style: const TextStyle(
-                                            color: kSecondaryColor,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Sub Category',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                value: _selectedSubCat,
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                underline: const SizedBox(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedSubCat = value.toString();
-                                  });
-                                },
-                                isExpanded: true,
-                                hint: const Text(
-                                  'All Sub-Category',
-                                  style: TextStyle(
-                                    color: kSecondaryColor,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                items:
-                                    allCategory[subIndex].subCategory.map((cd) {
-                                      return DropdownMenuItem(
-                                        value:
-                                            cd.id == 0
-                                                ? 'all'
-                                                : cd.id.toString(),
-                                        child: Text(
-                                          cd.title.toString(),
-                                          style: const TextStyle(
-                                            color: kSecondaryColor,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Pricing',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                underline: const SizedBox(),
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                value: _selectedPrice,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedPrice = value.toString();
-                                  });
-                                },
-                                isExpanded: true,
-                                items:
-                                    PriceFilter.getPriceFilter().map((pf) {
-                                      return DropdownMenuItem(
-                                        value: pf.id,
-                                        child: Text(
-                                          pf.name,
-                                          style: const TextStyle(
-                                            color: kSecondaryColor,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Level',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                underline: const SizedBox(),
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                value: _selectedLevel,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedLevel = value.toString();
-                                  });
-                                },
-                                isExpanded: true,
-                                items:
-                                    DifficultyLevel.getDifficultyLevel().map((
-                                      dl,
-                                    ) {
-                                      return DropdownMenuItem(
-                                        value: dl.id,
-                                        child: Text(
-                                          dl.name,
-                                          style: const TextStyle(
-                                            color: kSecondaryColor,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Language',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                underline: const SizedBox(),
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                value: _selectedLanguage,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedLanguage = value.toString();
-                                  });
-                                },
-                                isExpanded: true,
-                                items:
-                                    langData.map((ld) {
-                                      return DropdownMenuItem(
-                                        value: ld.value,
-                                        child: Text(
-                                          ld.displayedValue.toString(),
-                                          style: const TextStyle(
-                                            color: kSecondaryColor,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: CustomText(
-                              text: 'Rating',
-                              fontSize: 17,
-                              colors: kTextColor,
-                            ),
-                          ),
-                          Card(
-                            elevation: 0.1,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: DropdownButton(
-                                dropdownColor: kBackgroundColor,
-                                underline: const SizedBox(),
-                                icon: const Card(
-                                  elevation: 0.1,
-                                  color: kBackgroundColor,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down_outlined,
-                                  ),
-                                ),
-                                value: _selectedRating,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedRating = value.toString();
-                                  });
-                                },
-                                isExpanded: true,
-                                items:
-                                    [0, 1, 2, 3, 4, 5].map((item) {
-                                      return DropdownMenuItem(
-                                        value:
-                                            item == 0 ? 'all' : item.toString(),
-                                        child:
-                                            item == 0
-                                                ? const Text(
-                                                  'All Rating',
-                                                  style: TextStyle(
-                                                    color: kSecondaryColor,
-                                                    fontSize: 15,
-                                                  ),
-                                                )
-                                                : StarDisplayWidget(
-                                                  value: item,
-                                                  filledStar: const Icon(
-                                                    Icons.star,
-                                                    color: Colors.amber,
-                                                    size: 15,
-                                                  ),
-                                                  unfilledStar: const Icon(
-                                                    Icons.star,
-                                                    color: Colors.grey,
-                                                    size: 15,
-                                                  ),
-                                                ),
-                                      );
-                                    }).toList(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                flex: 5,
-                                child: MaterialButton(
-                                  elevation: 0.5,
-                                  onPressed: _resetForm,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  color: Colors.white,
-                                  textColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(7.0),
-                                    side: const BorderSide(color: Colors.white),
-                                  ),
-                                  child: const Text(
-                                    'Reset',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(flex: 2, child: Container()),
-                              Expanded(
-                                flex: 5,
-                                child: MaterialButton(
-                                  elevation: 0.5,
-                                  onPressed: _submitForm,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  color: kPrimaryColor,
-                                  textColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(7.0),
-                                    side: const BorderSide(
-                                      color: kPrimaryColor,
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Filter',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+  }
+
+  // Comprueba la conexión:
+  bool _hasConnection() {
+    return _connectionStatus.isNotEmpty &&
+        _connectionStatus.first != ConnectivityResult.none;
+  }
+
+  // Pantalla cuando NO tenemos conexión:
+  Widget _noConnectionView() {
+    return Center(
+      child: Column(
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * .15),
+          Image.asset(
+            "assets/images/no_connection.png",
+            height: MediaQuery.of(context).size.height * .35,
           ),
-        );
+          const Padding(
+            padding: EdgeInsets.all(4.0),
+            child: Text('There is no Internet connection'),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(4.0),
+            child: Text('Please check your Internet connection'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Indicador de carga:
+  Widget _loadingView() {
+    return Center(
+      child: CircularProgressIndicator(color: kPrimaryColor.withOpacity(0.7)),
+    );
+  }
+
+  // AppBar personalizado:
+  Widget _buildAppBar() {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      elevation: 0.5,
+      title: const Text(
+        'Filter Courses',
+        style: TextStyle(
+          fontSize: 18,
+          color: kTextColor,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      iconTheme: const IconThemeData(color: kSecondaryColor),
+      backgroundColor: kBackgroundColor,
+      actions: [
+        IconButton(
+          icon: const Icon(
+            Icons.cancel_outlined,
+            color: Colors.black38,
+            size: 20,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+  }
+
+  // Prepara las listas de dropdown una sola vez:
+  void _prepareDropdownData(BuildContext ctx) {
+    final catData = Provider.of<Categories>(ctx, listen: false).items;
+    if (catData.isEmpty || catData.first.id != 0) {
+      catData.insert(
+        0,
+        Category(
+          id: 0,
+          title: 'All Category',
+          thumbnail: null,
+          numberOfCourses: null,
+          numberOfSubCategories: null,
+        ),
+      );
+    }
+    final langData = Provider.of<Languages>(ctx, listen: false).items;
+    if (langData.isEmpty || langData.first.id != 0) {
+      langData.insert(
+        0,
+        Language(id: 0, value: 'all', displayedValue: 'All Language'),
+      );
+    }
+    final allCategory = Provider.of<Categories>(ctx, listen: false).allItems;
+    if (allCategory.isEmpty || allCategory.first.id != 0) {
+      allCategory.insert(
+        0,
+        AllCategory(id: 0, title: 'All Category', subCategory: data),
+      );
+    }
+  }
+
+  // Construye todo el formulario de filtros:
+  Widget _buildFilterForm(BuildContext ctx) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CustomText(text: 'Category', fontSize: 17, colors: kTextColor),
+          _buildCategoryDropdown(ctx),
+          const CustomText(
+            text: 'Sub Category',
+            fontSize: 17,
+            colors: kTextColor,
+          ),
+          _buildSubCategoryDropdown(ctx),
+          const CustomText(text: 'Pricing', fontSize: 17, colors: kTextColor),
+          _buildPriceDropdown(),
+          const CustomText(text: 'Level', fontSize: 17, colors: kTextColor),
+          _buildLevelDropdown(),
+          const CustomText(text: 'Language', fontSize: 17, colors: kTextColor),
+          _buildLanguageDropdown(),
+          const CustomText(text: 'Rating', fontSize: 17, colors: kTextColor),
+          _buildRatingDropdown(),
+          const SizedBox(height: 10),
+          _buildResetAndFilterButtons(),
+        ],
+      ),
+    );
+  }
+
+  // Helper methods extracted from FilterWidget:
+
+  // 1) Category dropdown
+  Widget _buildCategoryDropdown(BuildContext ctx) {
+    final catData = Provider.of<Categories>(ctx, listen: false).items;
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedCategory,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          onChanged: (value) {
+            setState(() {
+              _selectedSubCat = null;
+              _selectedCategory = value!;
+            });
+          },
+          items:
+              catData.map((cd) {
+                return DropdownMenuItem<String>(
+                  value: cd.id == 0 ? 'all' : cd.id.toString(),
+                  onTap: () {
+                    setState(() {
+                      subIndex = catData.indexOf(cd);
+                    });
+                  },
+                  child: Text(cd.title.toString()),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 2) Sub-category dropdown
+  Widget _buildSubCategoryDropdown(BuildContext ctx) {
+    final allCategory = Provider.of<Categories>(ctx, listen: false).allItems;
+    final subCategories = allCategory[subIndex].subCategory;
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedSubCat,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          hint: const Text('All Sub-Category'),
+          onChanged: (value) {
+            setState(() {
+              _selectedSubCat = value!;
+            });
+          },
+          items:
+              subCategories.map((sc) {
+                return DropdownMenuItem<String>(
+                  value: sc.id == 0 ? 'all' : sc.id.toString(),
+                  child: Text(sc.title.toString()),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 3) Price dropdown
+  Widget _buildPriceDropdown() {
+    final filters = PriceFilter.getPriceFilter();
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedPrice,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          onChanged: (value) {
+            setState(() {
+              _selectedPrice = value!;
+            });
+          },
+          items:
+              filters.map((pf) {
+                return DropdownMenuItem<String>(
+                  value: pf.id,
+                  child: Text(pf.name),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 4) Level dropdown
+  Widget _buildLevelDropdown() {
+    final levels = DifficultyLevel.getDifficultyLevel();
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedLevel,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          onChanged: (value) {
+            setState(() {
+              _selectedLevel = value!;
+            });
+          },
+          items:
+              levels.map((dl) {
+                return DropdownMenuItem<String>(
+                  value: dl.id,
+                  child: Text(dl.name),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 5) Language dropdown
+  Widget _buildLanguageDropdown() {
+    final langData = Provider.of<Languages>(context, listen: false).items;
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedLanguage,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          onChanged: (value) {
+            setState(() {
+              _selectedLanguage = value!;
+            });
+          },
+          items:
+              langData.map((ld) {
+                return DropdownMenuItem<String>(
+                  value: ld.value,
+                  child: Text(ld.displayedValue.toString()),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 6) Rating dropdown
+  Widget _buildRatingDropdown() {
+    return Card(
+      elevation: 0.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: DropdownButton<String>(
+          dropdownColor: kBackgroundColor,
+          value: _selectedRating,
+          underline: const SizedBox(),
+          icon: const Icon(Icons.keyboard_arrow_down_outlined),
+          isExpanded: true,
+          onChanged: (value) {
+            setState(() {
+              _selectedRating = value!;
+            });
+          },
+          items:
+              [0, 1, 2, 3, 4, 5].map((item) {
+                return DropdownMenuItem<String>(
+                  value: item == 0 ? 'all' : item.toString(),
+                  child:
+                      item == 0
+                          ? const Text('All Rating')
+                          : StarDisplayWidget(
+                            value: item,
+                            filledStar: const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 15,
+                            ),
+                            unfilledStar: const Icon(
+                              Icons.star,
+                              color: Colors.grey,
+                              size: 15,
+                            ),
+                          ),
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // 7) Reset button
+  Widget _resetButton() {
+    return MaterialButton(
+      elevation: 0.5,
+      onPressed: _resetForm,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: Colors.white,
+      textColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(7.0),
+        side: const BorderSide(color: Colors.white),
+      ),
+      child: const Text(
+        'Reset',
+        style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16),
+      ),
+    );
+  }
+
+  // 8) Filter button
+  Widget _filterButton() {
+    return MaterialButton(
+      elevation: 0.5,
+      onPressed: _submitForm,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      color: kPrimaryColor,
+      textColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(7.0),
+        side: const BorderSide(color: kPrimaryColor),
+      ),
+      child: const Text(
+        'Filter',
+        style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16),
+      ),
+    );
+  }
+
+  Row _buildResetAndFilterButtons() {
+    return Row(
+      children: [
+        Expanded(flex: 5, child: _resetButton()),
+        const Spacer(flex: 2),
+        Expanded(flex: 5, child: _filterButton()),
+      ],
+    );
   }
 }

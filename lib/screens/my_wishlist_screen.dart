@@ -18,43 +18,39 @@ class MyWishlistScreen extends StatefulWidget {
 }
 
 class _MyWishlistScreenState extends State<MyWishlistScreen> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  // 1) Estado: guardamos la lista de resultados
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  // 2) Suscripción a Stream<List<ConnectivityResult>>
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     initConnectivity();
-
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(
-              _updateConnectionStatus
-                  as void Function(List<ConnectivityResult> event)?,
-            )
-            as StreamSubscription<ConnectivityResult>;
+    // 3) onConnectivityChanged emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
+  // 4) initConnectivity devuelve Future<List<ConnectivityResult>>
   Future<void> initConnectivity() async {
-    late ConnectivityResult result;
+    List<ConnectivityResult> results;
     try {
-      result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
+      results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
+      debugPrint('Error comprobando conectividad: $e');
       return;
     }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+    if (!mounted) return;
+    _updateConnectionStatus(results);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  // 5) Callback que recibe la lista completa
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 
@@ -66,6 +62,11 @@ class _MyWishlistScreenState extends State<MyWishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 6) Comprueba el primer elemento para ver estado de conexión
+    final bool hasConnection =
+        _connectionStatus.isNotEmpty &&
+        _connectionStatus.first != ConnectivityResult.none;
+
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
@@ -94,35 +95,36 @@ class _MyWishlistScreenState extends State<MyWishlistScreen> {
                 );
               } else {
                 if (dataSnapshot.error != null) {
-                  return _connectionStatus == ConnectivityResult.none
-                      ? Center(
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * .15,
+                  // 7) Si no hay conexión en la lista...
+                  if (!hasConnection) {
+                    return Center(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * .15,
+                          ),
+                          Image.asset(
+                            "assets/images/no_connection.png",
+                            height: MediaQuery.of(context).size.height * .35,
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Text('There is no Internet connection'),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Text(
+                              'Please check your Internet connection',
                             ),
-                            Image.asset(
-                              "assets/images/no_connection.png",
-                              height: MediaQuery.of(context).size.height * .35,
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.all(4.0),
-                              child: Text('There is no Internet connection'),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.all(4.0),
-                              child: Text(
-                                'Please check your Internet connection',
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      : Center(
-                        // child: Text('Error Occurred'),
-                        child: Text(dataSnapshot.error.toString()),
-                      );
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Center(child: Text(dataSnapshot.error.toString()));
+                  }
                 } else {
+                  // 8) Mostrar lista cuando haya datos y conexión
                   return Consumer<Courses>(
                     builder:
                         (context, courseData, child) => AlignedGridView.count(

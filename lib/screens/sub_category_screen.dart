@@ -17,9 +17,11 @@ class SubCategoryScreen extends StatefulWidget {
 }
 
 class _SubCategoryScreenState extends State<SubCategoryScreen> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  // 1) Estado como lista de ConnectivityResult
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  // 2) Suscripción a Stream<List<ConnectivityResult>>
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   // var _isLoading = false;
 
@@ -27,35 +29,29 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   void initState() {
     super.initState();
     initConnectivity();
-
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(
-              _updateConnectionStatus
-                  as void Function(List<ConnectivityResult> event)?,
-            )
-            as StreamSubscription<ConnectivityResult>;
+    // 3) onConnectivityChanged emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
+  // 4) initConnectivity devuelve Future<List<ConnectivityResult>>
   Future<void> initConnectivity() async {
-    late ConnectivityResult result;
+    List<ConnectivityResult> results;
     try {
-      result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
+      results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
+      print('Error comprobando conectividad: $e');
       return;
     }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+    if (!mounted) return;
+    _updateConnectionStatus(results);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  // 5) Callback recibe la lista completa
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 
@@ -67,6 +63,10 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 6) Determina si hay conexión mirando el primer elemento
+    final bool hasConnection =
+        _connectionStatus.isNotEmpty &&
+        _connectionStatus.first != ConnectivityResult.none;
     final routeArgs =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
@@ -97,83 +97,79 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                   ),
                 ),
               );
+            } else if (dataSnapshot.error != null) {
+              // 7) Si falla y NO hay conexión:
+              if (!hasConnection) {
+                return Center(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * .15,
+                      ),
+                      Image.asset(
+                        "assets/images/no_connection.png",
+                        height: MediaQuery.of(context).size.height * .35,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(4.0),
+                        child: Text('There is no Internet connection'),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(4.0),
+                        child: Text('Please check your Internet connection'),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // Error distinto cuando sí hay red
+                return const Center(child: Text('Error Occured'));
+              }
             } else {
-              if (dataSnapshot.error != null) {
-                //error
-                return _connectionStatus == ConnectivityResult.none
-                    ? Center(
+              // 8) Datos cargados y hay conexión: tu ListView
+              return Consumer<Categories>(
+                builder:
+                    (context, myCourseData, child) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * .15,
-                          ),
-                          Image.asset(
-                            "assets/images/no_connection.png",
-                            height: MediaQuery.of(context).size.height * .35,
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text('There is no Internet connection'),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text(
-                              'Please check your Internet connection',
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  'Showing ${myCourseData.subItems.length} Sub-Categories',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
                             ),
+                          ),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: myCourseData.subItems.length,
+                            itemBuilder: (ctx, index) {
+                              return SubCategoryListItem(
+                                id: myCourseData.subItems[index].id,
+                                title: myCourseData.subItems[index].title,
+                                parent: myCourseData.subItems[index].parent,
+                                numberOfCourses:
+                                    myCourseData
+                                        .subItems[index]
+                                        .numberOfCourses,
+                                index: index,
+                              );
+                            },
                           ),
                         ],
                       ),
-                    )
-                    : const Center(
-                      child: Text('Error Occured'),
-                      // child: Text(dataSnapshot.error.toString()),
-                    );
-              } else {
-                return Consumer<Categories>(
-                  builder:
-                      (context, myCourseData, child) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Text(
-                                    'Showing ${myCourseData.subItems.length} Sub-Categories',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w300,
-                                      fontSize: 17,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: myCourseData.subItems.length,
-                              itemBuilder: (ctx, index) {
-                                return SubCategoryListItem(
-                                  id: myCourseData.subItems[index].id,
-                                  title: myCourseData.subItems[index].title,
-                                  parent: myCourseData.subItems[index].parent,
-                                  numberOfCourses:
-                                      myCourseData
-                                          .subItems[index]
-                                          .numberOfCourses,
-                                  index: index,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                );
-              }
+                    ),
+              );
             }
           },
         ),

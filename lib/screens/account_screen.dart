@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/services.dart';
+
 import '../providers/auth.dart';
 import '../screens/account_remove_screen.dart';
 import '../widgets/account_list_tile.dart';
@@ -26,10 +28,9 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  // final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  final Connectivity _connectivity = Connectivity();
   dynamic courseAccessibility;
 
   systemSettings() async {
@@ -82,36 +83,31 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
-    // initConnectivity();
-    getVideos();
-    getCourse();
-    systemSettings();
+    initConnectivity();
 
-    // _connectivitySubscription =
-    //     _connectivity.onConnectivityChanged.listen(_updateConnectionStatus as void Function(List<ConnectivityResult> event)?) as StreamSubscription<ConnectivityResult>;
+    // onConnectivityChanged emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
-  // Future<void> initConnectivity() async {
-  //   late ConnectivityResult result;
+  // 2) InitConnectivity sin casteos extraños:
+  Future<void> initConnectivity() async {
+    List<ConnectivityResult> results;
+    try {
+      // Ahora devuelve una lista
+      results = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      debugPrint('Error al comprobar conectividad: $e');
+      return;
+    }
+    if (!mounted) return;
+    _updateConnectionStatus(results);
+  }
 
-  //   try {
-  //     result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
-  //   } on PlatformException catch (e) {
-  //     // ignore: avoid_print
-  //     print(e.toString());
-  //     return;
-  //   }
-
-  //   if (!mounted) {
-  //     return Future.value(null);
-  //   }
-
-  //   return _updateConnectionStatus(result);
-  // }
-
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 

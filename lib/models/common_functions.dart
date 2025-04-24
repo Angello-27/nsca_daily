@@ -1,6 +1,6 @@
 import '../constants.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 
 class CommonFunctions {
   static void showErrorDialog(String message, BuildContext context) {
@@ -23,24 +23,24 @@ class CommonFunctions {
   }
 
   static void showSuccessToast(String message) {
-    Fluttertoast.showToast(
+    /*Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.SNACKBAR,
       // backgroundColor: Colors.blueGrey,
       // textColor: kToastTextColor,
       // fontSize: 16.0
-    );
+    );*/
   }
 
   static void showWarningToast(String message) {
-    Fluttertoast.showToast(
+    /*Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       backgroundColor: const Color.fromARGB(255, 231, 122, 122),
       textColor: kToastTextColor,
       fontSize: 16.0,
-    );
+    );*/
   }
 }

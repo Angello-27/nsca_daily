@@ -32,9 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
   var bundles = [];
   dynamic bundleStatus;
 
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   @override
   void initState() {
@@ -42,34 +42,30 @@ class _HomeScreenState extends State<HomeScreen> {
     addonStatus();
     initConnectivity();
 
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen(
-              _updateConnectionStatus
-                  as void Function(List<ConnectivityResult> event)?,
-            )
-            as StreamSubscription<ConnectivityResult>;
+    // onConnectivityChanged emite List<ConnectivityResult>
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionStatus,
+    );
   }
 
+  // 2) InitConnectivity sin casteos extraños:
   Future<void> initConnectivity() async {
-    late ConnectivityResult result;
+    List<ConnectivityResult> results;
     try {
-      result = (await _connectivity.checkConnectivity()) as ConnectivityResult;
+      // Ahora devuelve una lista
+      results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      // ignore: avoid_print
-      print(e.toString());
+      debugPrint('Error al comprobar conectividad: $e');
       return;
     }
-
-    if (!mounted) {
-      return Future.value(null);
-    }
-
-    return _updateConnectionStatus(result);
+    if (!mounted) return;
+    _updateConnectionStatus(results);
   }
 
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  // 3) La función maneja un único ConnectivityResult y es síncrona.
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
     setState(() {
-      _connectionStatus = result;
+      _connectionStatus = results;
     });
   }
 
