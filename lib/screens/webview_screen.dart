@@ -29,7 +29,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     var url = '$BASE_URL/api/app_logo';
     try {
       final response = await http.get(Uri.parse(url));
-      // print(response.body);
+      // debugPrint(response.body);
       if (response.statusCode == 200) {
         var logo = AppLogo.fromJson(jsonDecode(response.body));
         _controllerTwo.add(logo);

@@ -81,8 +81,8 @@ class _ForumQuestionGridState extends State<ForumQuestionGrid> {
     var url = "$BASE_URL/api/forum_question_delete/$questionId/$token";
     try {
       final response = await http.get(Uri.parse(url));
-      // print(url);
-      // print(response.statusCode);
+      // debugPrint(url);
+      // debugPrint(response.statusCode);
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['status'] != 200) {

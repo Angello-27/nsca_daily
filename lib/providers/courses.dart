@@ -48,7 +48,7 @@ class Courses with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _topItems = buildCourseList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -65,7 +65,7 @@ class Courses with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
 
       _items = buildCourseList(extractedData);
       notifyListeners();
@@ -77,7 +77,7 @@ class Courses with ChangeNotifier {
   Future<void> fetchCoursesBySearchQuery(String searchQuery) async {
     var url =
         '$BASE_URL/api/courses_by_search_string?search_string=$searchQuery';
-    // print(url);
+    // debugPrint(url);
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body) as List;
@@ -85,7 +85,7 @@ class Courses with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
 
       _items = buildCourseList(extractedData);
       notifyListeners();
@@ -103,7 +103,7 @@ class Courses with ChangeNotifier {
   ) async {
     var url =
         '$BASE_URL/api/filter_course?selected_category=$selectedCategory&selected_price=$selectedPrice&selected_level=$selectedLevel&selected_language=$selectedLanguage&selected_rating=$selectedRating&selected_search_string=';
-    // print(url);
+    // debugPrint(url);
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body) as List;
@@ -111,7 +111,7 @@ class Courses with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
 
       _items = buildCourseList(extractedData);
       notifyListeners();
@@ -130,9 +130,9 @@ class Courses with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _items = buildCourseList(extractedData);
-      // print(_items);
+      // debugPrint(_items);
       notifyListeners();
     } catch (error) {
       rethrow;
@@ -160,7 +160,7 @@ class Courses with ChangeNotifier {
           vimeoVideoId: courseData['vimeo_video_id'],
         ),
       );
-      // print(catData['name']);
+      // debugPrint(catData['name']);
     }
     return loadedCourses;
   }
@@ -240,7 +240,7 @@ class Courses with ChangeNotifier {
           ),
         );
       }
-      // print(loadedCourseDetails.first.courseOutcomes.last);
+      // debugPrint(loadedCourseDetails.first.courseOutcomes.last);
       // _items = buildCourseList(extractedData);
       _courseDetailsitems = loadedCourseDetails;
       // _courseDetail = loadedCourseDetails.first;
@@ -283,7 +283,7 @@ class Courses with ChangeNotifier {
         ),
       );
     }
-    // print(loadedSections.first.title);
+    // debugPrint(loadedSections.first.title);
     return loadedSections;
   }
 
@@ -310,7 +310,7 @@ class Courses with ChangeNotifier {
         ),
       );
     }
-    // print(loadedLessons.first.title);
+    // debugPrint(loadedLessons.first.title);
     return loadedLessons;
   }
 }

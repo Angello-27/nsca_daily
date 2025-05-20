@@ -46,7 +46,7 @@ class _AskQuestionWidgetState extends State<AskQuestionWidget> {
       CommonFunctions.showSuccessToast('User updated Successfully');
       Navigator.of(context).pop();
     } catch (error) {
-      // print(error);
+      // debugPrint(error);
       const errorMsg = 'Update failed!';
       CommonFunctions.showErrorDialog(errorMsg, context);
     }

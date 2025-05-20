@@ -23,7 +23,7 @@ class CourseForum with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _questions = buildQuestionList(extractedData);
       notifyListeners();
       if (response.statusCode == 403) {
@@ -45,7 +45,7 @@ class CourseForum with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _questions = buildQuestionList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -120,7 +120,7 @@ class CourseForum with ChangeNotifier {
   Future<void> toggleForumQuestionVote(String questionId) async {
     final token = await SharedPreferenceHelper().getAuthToken();
     var url = '$BASE_URL/api/forum_question_vote/$questionId/$token/';
-    // print(url);
+    // debugPrint(url);
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body);

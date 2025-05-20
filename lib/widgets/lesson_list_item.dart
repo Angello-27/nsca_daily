@@ -68,7 +68,7 @@ class _LessonListItemState extends State<LessonListItem> {
   }
 
   IconData getLessonIcon(String lessonType) {
-    // print(lessonType);
+    // debugPrint(lessonType);
     if (lessonType == 'video') {
       return Icons.play_arrow;
     } else if (lessonType == 'quiz') {

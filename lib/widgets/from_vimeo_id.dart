@@ -15,11 +15,12 @@ class PlayVideoFromVimeoId extends StatefulWidget {
   final int courseId;
   final int? lessonId;
   final String vimeoVideoId;
-  const PlayVideoFromVimeoId(
-      {super.key,
-      required this.courseId,
-      this.lessonId,
-      required this.vimeoVideoId});
+  const PlayVideoFromVimeoId({
+    super.key,
+    required this.courseId,
+    this.lessonId,
+    required this.vimeoVideoId,
+  });
 
   @override
   State<PlayVideoFromVimeoId> createState() => _PlayVideoFromVimeoIdState();
@@ -40,7 +41,9 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromVimeoId> {
 
     if (widget.lessonId != null) {
       timer = Timer.periodic(
-          const Duration(seconds: 5), (Timer t) => updateWatchHistory());
+        const Duration(seconds: 5),
+        (Timer t) => updateWatchHistory(),
+      );
     }
   }
 
@@ -50,8 +53,8 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromVimeoId> {
       dynamic url;
       if (token != null && token.isNotEmpty) {
         url = "$BASE_URL/api/update_watch_history/$token";
-        // print(widget.lessonId);
-        // print(controller.currentVideoPosition.inSeconds);
+        // debugPrint(widget.lessonId);
+        // debugPrint(controller.currentVideoPosition.inSeconds);
         try {
           final response = await http.post(
             Uri.parse(url),
@@ -64,17 +67,20 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromVimeoId> {
           );
 
           final responseData = json.decode(response.body);
-          // print(responseData);
+          // debugPrint(responseData);
           if (responseData == null) {
             return;
           } else {
             var isCompleted = responseData['is_completed'];
             if (isCompleted == 1) {
-              Provider.of<MyCourses>(context, listen: false)
-                  .updateDripContendLesson(
-                      widget.courseId,
-                      responseData['course_progress'],
-                      responseData['number_of_completed_lessons']);
+              Provider.of<MyCourses>(
+                context,
+                listen: false,
+              ).updateDripContendLesson(
+                widget.courseId,
+                responseData['course_progress'],
+                responseData['number_of_completed_lessons'],
+              );
             }
           }
         } catch (error) {
@@ -101,15 +107,11 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromVimeoId> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kBackgroundColor,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       backgroundColor: kBackgroundColor,
       body: SafeArea(
-        child: Center(
-          child: PodVideoPlayer(controller: controller),
-        ),
+        child: Center(child: PodVideoPlayer(controller: controller)),
       ),
     );
   }

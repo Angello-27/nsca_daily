@@ -201,7 +201,7 @@ class _DownloadListScreenState extends State<DownloadListScreen> {
                                                     '${getVideo.path}/${getVideo.title}';
                                                 // path = '/storage/emulated/0/Download/Youtube Downloadermp4';
                                                 if (path == null) return;
-                                                // print(path);
+                                                // debugPrint(path);
                                                 Navigator.of(context).push(
                                                   CupertinoPageRoute(
                                                     builder: (context) {
@@ -215,7 +215,7 @@ class _DownloadListScreenState extends State<DownloadListScreen> {
                                                 );
                                                 // var val = await DatabaseHelper.instance
                                                 //     .courseExists(video.courseId);
-                                                // print(val);
+                                                // debugPrint(val);
                                               });
                                             },
                                             child: Container(

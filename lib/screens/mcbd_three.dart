@@ -210,7 +210,7 @@ class _McbdThreeState extends State<McbdThree>
     secTitle,
     secId,
   ) async {
-    // print("${BaseDirectory.applicationSupport}/system");
+    // debugPrint("${BaseDirectory.applicationSupport}/system");
     String fileUrl;
 
     if (lesson.videoTypeWeb == 'html5' || lesson.videoTypeWeb == 'amazon') {
@@ -226,6 +226,7 @@ class _McbdThreeState extends State<McbdThree>
       fileUrl =
           '$BASE_URL/api_files/offline_video_for_mobile_app/${lesson.id}/$token';
     }
+    debugPrint(fileUrl);
 
     // backgroundDownloadTask = DownloadTask(
     //     url: fileUrl,
@@ -316,7 +317,7 @@ class _McbdThreeState extends State<McbdThree>
     secTitle,
     secId,
   ) async {
-    // print(lesson.videoTypeWeb);
+    // debugPrint(lesson.videoTypeWeb);
     if (lesson.videoTypeWeb == 'YouTube') {
       CommonFunctions.showSuccessToast(
         'This video format is not supported for download.',
@@ -331,7 +332,7 @@ class _McbdThreeState extends State<McbdThree>
       if (les == true) {
         var check = await DatabaseHelper.instance.lessonDetails(lesson.id);
         File checkPath = File("${check['path']}/${check['title']}");
-        // print(checkPath.existsSync());
+        // debugPrint(checkPath.existsSync());
         if (!checkPath.existsSync()) {
           await DatabaseHelper.instance.removeVideo(check['id']);
           processButtonPress(
@@ -373,7 +374,7 @@ class _McbdThreeState extends State<McbdThree>
   }
 
   void lessonAction(Lesson lesson) async {
-    // print(lesson.videoTypeWeb);
+    // debugPrint(lesson.videoTypeWeb);
     if (lesson.lessonType == 'video') {
       if (lesson.videoTypeWeb == 'html5' || lesson.videoTypeWeb == 'amazon') {
         Navigator.push(
@@ -391,7 +392,7 @@ class _McbdThreeState extends State<McbdThree>
         final token = await SharedPreferenceHelper().getAuthToken();
         var url =
             '$BASE_URL/api_files/file_content?course_id=${widget.courseId}&lesson_id=${lesson.id}&auth_token=$token';
-        // print(url);
+        // debugPrint(url);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -422,9 +423,9 @@ class _McbdThreeState extends State<McbdThree>
           ),
         );
       } else if (lesson.videoTypeWeb!.toLowerCase() == 'vimeo') {
-        // print(lesson.videoTypeWeb);
+        // debugPrint(lesson.videoTypeWeb);
         String vimeoVideoId = lesson.videoUrlWeb!.split('/').last;
-        // print(vimeoVideoId);
+        // debugPrint(vimeoVideoId);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -456,10 +457,10 @@ class _McbdThreeState extends State<McbdThree>
         );
       }
     } else if (lesson.lessonType == 'quiz') {
-      // print(lesson.id);
+      // debugPrint(lesson.id);
       final token = await SharedPreferenceHelper().getAuthToken();
       final url = '$BASE_URL/api/quiz_mobile_web_view/${lesson.id}/$token';
-      // print(_url);
+      // debugPrint(_url);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => WebViewScreen(url: url)),
@@ -484,7 +485,7 @@ class _McbdThreeState extends State<McbdThree>
         //             FileDataScreen(textData: data, note: lesson.summary!)));
         final token = await SharedPreferenceHelper().getAuthToken();
         final url = '$BASE_URL/api/lesson_mobile_web_view/${lesson.id}/$token';
-        // print(_url);
+        // debugPrint(_url);
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => WebViewScreen(url: url)),
@@ -504,7 +505,7 @@ class _McbdThreeState extends State<McbdThree>
         final token = await SharedPreferenceHelper().getAuthToken();
         final url =
             '$BASE_URL/api_files/file_content?course_id=${widget.courseId}&lesson_id=${lesson.id}&auth_token=$token';
-        // print(url);
+        // debugPrint(url);
         _launchURL(url);
       }
     }
@@ -916,7 +917,7 @@ class _McbdThreeState extends State<McbdThree>
                                                 ? true
                                                 : false,
                                         onChanged: (bool? value) {
-                                          // print(value);
+                                          // debugPrint(value);
 
                                           setState(() {
                                             lesson.isCompleted =

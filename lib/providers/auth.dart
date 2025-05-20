@@ -97,7 +97,7 @@ class Auth with ChangeNotifier {
 
       notifyListeners();
 
-      // print(userData);
+      // debugPrintuserData);
     } catch (error) {
       rethrow;
     }
@@ -110,7 +110,7 @@ class Auth with ChangeNotifier {
   //     final response = await http.get(Uri.parse(url));
   //     final responseData = json.decode(response.body);
 
-  //     // print(responseData['validity']);
+  //     // debugPrint(rintresponseData['validity']);
   //     if (responseData['validity'] == 0) {
   //       throw const HttpException('Auth Failed');
   //     }
@@ -136,7 +136,7 @@ class Auth with ChangeNotifier {
   //       'user': jsonEncode(_user),
   //     });
   //     prefs.setString('userData', userData);
-  //     // print(userData);
+  //     // debugPrint(rintuserData);
   //   } catch (error) {
   //     rethrow;
   //   }
@@ -148,7 +148,7 @@ class Auth with ChangeNotifier {
     // var userData = (prefs.getString('userData') ?? '');
     // var response = json.decode(userData);
     // final authToken = response['token'];
-    // print(response['user']);
+    // debugPrint(rintresponse['user']);
     final authToken = await SharedPreferenceHelper().getAuthToken();
     var url = '$BASE_URL/api/userdata?auth_token=$authToken';
     try {
@@ -166,7 +166,7 @@ class Auth with ChangeNotifier {
       _user.twitter = responseData['twitter'];
       _user.linkedIn = responseData['linkedin'];
       _user.biography = responseData['biography'];
-      // print(_user.image);
+      // debugPrint(rint_user.image);
       notifyListeners();
     } catch (error) {
       rethrow;
@@ -198,7 +198,7 @@ class Auth with ChangeNotifier {
             throw const HttpException('Upload Failed');
           }
           notifyListeners();
-          // print(value);
+          // debugPrint(rintvalue);
         });
       }
 

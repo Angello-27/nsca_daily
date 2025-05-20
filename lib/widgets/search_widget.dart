@@ -35,7 +35,7 @@ class _SearchWidgetState extends State<SearchWidget> {
         'type': CoursesPageData.Search,
       },
     );
-    // print(searchText);
+    // debugPrint(searchText);
   }
 
   @override

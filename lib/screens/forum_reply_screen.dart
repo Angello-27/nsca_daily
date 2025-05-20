@@ -95,7 +95,7 @@ class _ForumReplyScreenState extends State<ForumReplyScreen> {
 
   Future<void> _reply() async {
     var token = await SharedPreferenceHelper().getAuthToken();
-    // print(widget.questionId);
+    // debugPrint(widget.questionId);
     if (_textController.text.isEmpty) {
       // Invalid!
       return;
@@ -131,7 +131,7 @@ class _ForumReplyScreenState extends State<ForumReplyScreen> {
         activeQuestions.clear();
       }
     } catch (error) {
-      // print(error);
+      // debugPrint(error);
       const errorMsg = 'Could not post reply';
       CommonFunctions.showSuccessToast(errorMsg);
     }
@@ -142,8 +142,8 @@ class _ForumReplyScreenState extends State<ForumReplyScreen> {
     var url = "$BASE_URL/api/forum_question_delete/$questionId/$token";
     try {
       final response = await http.get(Uri.parse(url));
-      // print(url);
-      // print(response.statusCode);
+      // debugPrint(url);
+      // debugPrint(response.statusCode);
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['status'] != 200) {

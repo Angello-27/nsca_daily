@@ -53,7 +53,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
     try {
       // Log user in
-      // print(_userData['first_name']);
+      // debugPrint(_userData['first_name']);
       final updateUser = User(
         userId: _userData['user_id'],
         firstName: _userData['first_name'],
@@ -78,7 +78,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       var errorMsg = 'Update failed';
       CommonFunctions.showErrorDialog(errorMsg, context);
     } catch (error) {
-      // print(error);
+      // debugPrint(error);
       const errorMsg = 'Update failed!';
       CommonFunctions.showErrorDialog(errorMsg, context);
     }
@@ -360,7 +360,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                 _userData['token'] =
                                                     user.token!;
                                                 _submit();
-                                                // print(_userData['validity']);
+                                                // debugPrint(_userData['validity']);
                                               },
                                               color: kPrimaryColor,
                                               textColor: Colors.white,

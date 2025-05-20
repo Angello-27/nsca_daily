@@ -49,12 +49,12 @@ class _UserImagePickerState extends State<UserImagePicker> {
       final resData = json.decode(res.body);
       await SharedPreferenceHelper().setUserImage(resData['image'].toString());
     } on HttpException {
-      // print(error);
+      // debugPrint(error);
       var errorMsg = 'Upload failed.';
 
       CommonFunctions.showErrorDialog(errorMsg, context);
     } catch (error) {
-      // print(error);
+      // debugPrint(error);
       const errorMsg = 'Upload failed.';
       CommonFunctions.showErrorDialog(errorMsg, context);
     }

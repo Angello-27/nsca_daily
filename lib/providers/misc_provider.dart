@@ -38,8 +38,11 @@ class Language {
   int? id;
   String? value;
   String? displayedValue;
-  Language(
-      {@required this.id, @required this.value, @required this.displayedValue});
+  Language({
+    @required this.id,
+    @required this.value,
+    @required this.displayedValue,
+  });
 }
 
 class Languages with ChangeNotifier {
@@ -58,7 +61,7 @@ class Languages with ChangeNotifier {
       //   return;
       // }
       final List<Language> loadedLanguages = [];
-      // print(extractedData);
+      // debugPrint(extractedData);
       for (var langData in extractedData) {
         loadedLanguages.add(
           Language(

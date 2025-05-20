@@ -32,7 +32,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
         var logo = AppLogo.fromJson(jsonDecode(response.body));
         _controller.add(logo);
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
     } catch (error) {
       rethrow;
     }
@@ -53,7 +53,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
         'type': CoursesPageData.Search,
       },
     );
-    // print(searchText);
+    // debugPrint(searchText);
   }
 
   void _showSearchModal(BuildContext ctx) {

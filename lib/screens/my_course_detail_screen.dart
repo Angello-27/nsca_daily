@@ -204,14 +204,16 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
     secTitle,
     secId,
   ) async {
-    // print("${BaseDirectory.applicationSupport}/system");
+    // debugPrint("${BaseDirectory.applicationSupport}/system");
 
     if (lesson.videoTypeWeb == 'html5' || lesson.videoTypeWeb == 'amazon') {
     } else if (lesson.videoTypeWeb == 'google_drive') {
       final RegExp regExp = RegExp(r'[-\w]{25,}');
       final Match? match = regExp.firstMatch(lesson.videoUrlWeb.toString());
+      debugPrint(match.toString());
     } else {
       final token = await SharedPreferenceHelper().getAuthToken();
+      debugPrint(token);
     }
 
     // backgroundDownloadTask = DownloadTask(
@@ -290,7 +292,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
 
   // void _initDownload(
   //     Lesson lesson, myCourseId, coTitle, coThumbnail, secTitle, secId) async {
-  //   // print(lesson.videoTypeWeb);
+  //   // debugPrint(lesson.videoTypeWeb);
   //   if (lesson.videoTypeWeb == 'YouTube') {
   //     CommonFunctions.showSuccessToast(
   //         'This video format is not supported for download.');
@@ -303,7 +305,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
   //     if (les == true) {
   //       var check = await DatabaseHelper.instance.lessonDetails(lesson.id);
   //       File checkPath = File("${check['path']}/${check['title']}");
-  //       // print(checkPath.existsSync());
+  //       // debugPrint(checkPath.existsSync());
   //       if (!checkPath.existsSync()) {
   //         await DatabaseHelper.instance.removeVideo(check['id']);
   //         processButtonPress(
@@ -333,7 +335,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
   }
 
   void lessonAction(Lesson lesson) async {
-    // print(lesson.videoTypeWeb);
+    // debugPrint(lesson.videoTypeWeb);
     if (lesson.lessonType == 'video') {
       if (lesson.videoTypeWeb == 'html5' || lesson.videoTypeWeb == 'amazon') {
         Navigator.push(
@@ -347,13 +349,13 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                 ),
           ),
         );
-        print(lesson.videoTypeWeb);
-        print(lesson.videoUrlWeb);
+        debugPrint(lesson.videoTypeWeb);
+        debugPrint(lesson.videoUrlWeb);
       } else if (lesson.videoTypeWeb == 'system') {
         final token = await SharedPreferenceHelper().getAuthToken();
         var url =
             '$BASE_URL/api_files/file_content?course_id=${widget.courseId}&lesson_id=${lesson.id}&auth_token=$token';
-        // print(url);
+        // debugPrint(url);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -365,7 +367,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                 ),
           ),
         );
-        print(url);
+        debugPrint(url);
       } else if (lesson.videoTypeWeb == 'google_drive') {
         final RegExp regExp = RegExp(r'[-\w]{25,}');
         final Match? match = regExp.firstMatch(lesson.videoUrlWeb.toString());
@@ -384,11 +386,11 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                 ),
           ),
         );
-        print(url);
+        debugPrint(url);
       } else if (lesson.videoTypeWeb!.toLowerCase() == 'vimeo') {
-        // print(lesson.videoUrlWeb);
+        // debugPrint(lesson.videoUrlWeb);
         String vimeoVideoId = lesson.videoUrlWeb!.split('/').last;
-        // print(vimeoVideoId);
+        // debugPrint(vimeoVideoId);
         // Navigator.push(
         //     context,
         //     MaterialPageRoute(
@@ -529,10 +531,10 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
         );
       }
     } else if (lesson.lessonType == 'quiz') {
-      // print(lesson.id);
+      // debugPrint(lesson.id);
       final token = await SharedPreferenceHelper().getAuthToken();
       final url = '$BASE_URL/api/quiz_mobile_web_view/${lesson.id}/$token';
-      // print(_url);
+      // debugPrint(_url);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => WebViewScreen(url: url)),
@@ -557,7 +559,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
         //             FileDataScreen(textData: data, note: lesson.summary!)));
         final token = await SharedPreferenceHelper().getAuthToken();
         final url = '$BASE_URL/api/lesson_mobile_web_view/${lesson.id}/$token';
-        // print(_url);
+        // debugPrint(_url);
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => WebViewScreen(url: url)),
@@ -577,7 +579,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
         final token = await SharedPreferenceHelper().getAuthToken();
         final url =
             '$BASE_URL/api_files/file_content?course_id=${widget.courseId}&lesson_id=${lesson.id}&auth_token=$token';
-        // print(url);
+        // debugPrint(url);
         _launchURL(url);
       }
     }
@@ -958,7 +960,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                               onChanged: (
                                                                 bool? value,
                                                               ) {
-                                                                // print(value);
+                                                                // debugPrint(value);
 
                                                                 setState(() {
                                                                   lesson.isCompleted =
@@ -1058,7 +1060,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                           onChanged: (
                                                             bool? value,
                                                           ) {
-                                                            // print(value);
+                                                            // debugPrint(value);
 
                                                             setState(() {
                                                               lesson.isCompleted =
@@ -1152,7 +1154,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                               ? true
                                                               : false,
                                                       onChanged: (bool? value) {
-                                                        // print(value);
+                                                        // debugPrint(value);
 
                                                         setState(() {
                                                           lesson.isCompleted =
@@ -1346,7 +1348,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                           ? true
                                                           : false,
                                                   onChanged: (bool? value) {
-                                                    // print(value);
+                                                    // debugPrint(value);
 
                                                     setState(() {
                                                       lesson.isCompleted =
@@ -1660,7 +1662,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                           onChanged: (
                                                             bool? value,
                                                           ) {
-                                                            // print(value);
+                                                            // debugPrint(value);
 
                                                             setState(() {
                                                               lesson.isCompleted =
@@ -1754,7 +1756,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                               ? true
                                                               : false,
                                                       onChanged: (bool? value) {
-                                                        // print(value);
+                                                        // debugPrint(value);
 
                                                         setState(() {
                                                           lesson.isCompleted =
@@ -1840,7 +1842,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                           ? true
                                                           : false,
                                                   onChanged: (bool? value) {
-                                                    // print(value);
+                                                    // debugPrint(value);
 
                                                     setState(() {
                                                       lesson.isCompleted =
@@ -2030,7 +2032,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
                                                       ? true
                                                       : false,
                                               onChanged: (bool? value) {
-                                                // print(value);
+                                                // debugPrint(value);
 
                                                 setState(() {
                                                   lesson.isCompleted =

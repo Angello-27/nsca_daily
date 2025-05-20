@@ -48,7 +48,7 @@ class MyBundles with ChangeNotifier {
       if (extractedData.isEmpty || extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _bundleItems = buildMyBundleList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -78,7 +78,7 @@ class MyBundles with ChangeNotifier {
           subscriptionStatus: bundleData['subscription_status'],
         ),
       );
-      // print(catData['name']);
+      // debugPrint(catData['name']);
     }
     return loadedBundle;
   }
@@ -117,7 +117,7 @@ class MyBundles with ChangeNotifier {
           ),
         );
       }
-      // print(loadedCourseDetails.first.courseOutcomes.last);
+      // debugPrint(loadedCourseDetails.first.courseOutcomes.last);
       // _items = buildCourseList(extractedData);
       _bundleDetailsitems = loadedBundleDetails;
       // _courseDetail = loadedCourseDetails.first;
@@ -149,7 +149,7 @@ class MyBundles with ChangeNotifier {
         ),
       );
     }
-    // print(loadedSections.first.title);
+    // debugPrint(loadedSections.first.title);
     return loadedBundleCourse;
   }
 
@@ -164,7 +164,7 @@ class MyBundles with ChangeNotifier {
       if (extractedData.isEmpty || extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _items = buildCourseList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -195,7 +195,7 @@ class MyBundles with ChangeNotifier {
           enableDripContent: courseData['enable_drip_content'],
         ),
       );
-      // print(catData['name']);
+      // debugPrint(catData['name']);
     }
     return loadedCourses;
   }
@@ -257,7 +257,7 @@ class MyBundles with ChangeNotifier {
         ),
       );
     }
-    // print(loadedLessons.first.title);
+    // debugPrint(loadedLessons.first.title);
     return loadedLessons;
   }
 

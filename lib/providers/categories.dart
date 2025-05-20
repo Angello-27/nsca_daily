@@ -33,7 +33,7 @@ class Categories with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       final List<Category> loadedCategories = [];
 
       for (var catData in extractedData) {
@@ -47,7 +47,7 @@ class Categories with ChangeNotifier {
           ),
         );
 
-        // print(catData['name']);
+        // debugPrint(catData['name']);
       }
       _items = loadedCategories;
       notifyListeners();
@@ -65,7 +65,7 @@ class Categories with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       final List<SubCategory> loadedCategories = [];
 
       for (var catData in extractedData) {
@@ -78,7 +78,7 @@ class Categories with ChangeNotifier {
           ),
         );
 
-        // print(catData['name']);
+        // debugPrint(catData['name']);
       }
       _subItems = loadedCategories;
       notifyListeners();
@@ -92,12 +92,12 @@ class Categories with ChangeNotifier {
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body) as List;
-      // print(extractedData);
+      // debugPrint(extractedData);
       // ignore: unnecessary_null_comparison
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       final List<AllCategory> loadedCategories = [];
 
       for (var catData in extractedData) {
@@ -111,7 +111,7 @@ class Categories with ChangeNotifier {
           ),
         );
 
-        // print(catData['name']);
+        // debugPrint(catData['name']);
       }
       _allItems = loadedCategories;
       notifyListeners();
@@ -128,7 +128,7 @@ class Categories with ChangeNotifier {
         AllSubCategory(id: int.parse(subData['id']), title: subData['name']),
       );
     }
-    // print(loadedLessons.first.title);
+    // debugPrint(loadedLessons.first.title);
     return loadedSubCategories;
   }
 }

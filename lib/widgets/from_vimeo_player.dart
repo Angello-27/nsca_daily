@@ -60,10 +60,10 @@ class _FromVimeoPlayerState extends State<FromVimeoPlayer> {
           );
 
           final responseData = json.decode(response.body);
-          print("Arif response here ::: $responseData");
+          debugPrint("Arif response here ::: $responseData");
           if (responseData != null) {
             var isCompleted = responseData['is_completed'];
-            print("Arif output here ::: $isCompleted");
+            debugPrint("Arif output here ::: $isCompleted");
             if (isCompleted == 1) {
               Provider.of<MyCourses>(
                 context,
@@ -73,7 +73,7 @@ class _FromVimeoPlayerState extends State<FromVimeoPlayer> {
                 responseData['course_progress'],
                 responseData['number_of_completed_lessons'],
               );
-              print(
+              debugPrint(
                 "Arif output here ::: $responseData['number_of_completed_lessons']",
               );
             }

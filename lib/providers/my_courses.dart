@@ -40,7 +40,7 @@ class MyCourses with ChangeNotifier {
       if (extractedData.isEmpty || extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _items = buildMyCourseList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -71,7 +71,7 @@ class MyCourses with ChangeNotifier {
           enableDripContent: courseData['enable_drip_content'],
         ),
       );
-      // print(catData['name']);
+      // debugPrint(catData['name']);
     }
     return loadedCourses;
   }
@@ -135,7 +135,7 @@ class MyCourses with ChangeNotifier {
         ),
       );
     }
-    // print(loadedLessons.first.title);
+    // debugPrint(loadedLessons.first.title);
     return loadedLessons;
   }
 
@@ -143,7 +143,7 @@ class MyCourses with ChangeNotifier {
     final authToken = await SharedPreferenceHelper().getAuthToken();
     var url =
         '$BASE_URL/api/save_course_progress?auth_token=$authToken&lesson_id=$lessonId';
-    // print(url);
+    // debugPrint(url);
     try {
       final response = await http.get(Uri.parse(url));
       final responseData = json.decode(response.body);

@@ -94,7 +94,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     } catch (error) {
       const errorMsg = 'Could not register!';
-      // print(error);
+      // debugPrint(error);
       CommonFunctions.showErrorDialog(errorMsg, context);
     }
     setState(() {

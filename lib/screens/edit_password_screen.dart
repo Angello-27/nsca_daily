@@ -51,7 +51,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       var errorMsg = 'Password Update failed';
       CommonFunctions.showErrorDialog(errorMsg, context);
     } catch (error) {
-      // print(error);
+      // debugPrint(error);
       const errorMsg = 'Password Update failed!';
       CommonFunctions.showErrorDialog(errorMsg, context);
     }

@@ -269,7 +269,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                       context,
                                     ).requestFocus(_selectedFocus);
                                   }
-                                  // print(_selectedController.text);
+                                  // debugPrint(_selectedController.text);
                                 },
                                 child: Container(
                                   alignment: Alignment.center,
@@ -311,7 +311,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                           // if user enters value on a box that already has a value
                                           // the old value will be replaced by the new one
                                           if (val.length > 1) {
-                                            // print('hi');
+                                            // debugPrint('hi');
                                             _selectedController.clear();
                                             setState(() {
                                               _selectedController.text =
@@ -342,7 +342,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                                 _controllers[0];
                                           }
                                         } // if val isEmpty (i.e number was deleted from the box) do nothing
-                                        // print(_value);
+                                        // debugPrint(_value);
                                       },
                                     ),
                                   ),

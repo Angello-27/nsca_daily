@@ -26,7 +26,7 @@ class Bundles with ChangeNotifier {
     } else {
       url = '$BASE_URL/api/bundles';
     }
-    // print(url);
+    // debugPrint(url);
     try {
       final response = await http.get(Uri.parse(url));
       final extractedData = json.decode(response.body) as List;
@@ -34,7 +34,7 @@ class Bundles with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      // print(extractedData);
+      // debugPrint(extractedData);
       _bundleItems = buildBundleList(extractedData);
       notifyListeners();
     } catch (error) {
@@ -61,7 +61,7 @@ class Bundles with ChangeNotifier {
           numberOfRatings: bundleData['number_of_ratings'],
         ),
       );
-      // print(catData['name']);
+      // debugPrint(catData['name']);
     }
     return loadedBundle;
   }
@@ -137,7 +137,7 @@ class Bundles with ChangeNotifier {
         ),
       );
     }
-    // print(loadedSections.first.title);
+    // debugPrint(loadedSections.first.title);
     return loadedBundleCourse;
   }
 }

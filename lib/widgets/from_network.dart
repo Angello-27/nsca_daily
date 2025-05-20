@@ -16,8 +16,12 @@ class PlayVideoFromNetwork extends StatefulWidget {
   final int courseId;
   final int? lessonId;
   final String videoUrl;
-  const PlayVideoFromNetwork(
-      {super.key, required this.courseId, this.lessonId, required this.videoUrl});
+  const PlayVideoFromNetwork({
+    super.key,
+    required this.courseId,
+    this.lessonId,
+    required this.videoUrl,
+  });
 
   @override
   State<PlayVideoFromNetwork> createState() => _PlayVideoFromAssetState();
@@ -33,27 +37,20 @@ class _PlayVideoFromAssetState extends State<PlayVideoFromNetwork> {
     controller = PodPlayerController(
       playVideoFrom: PlayVideoFrom.networkQualityUrls(
         videoUrls: [
-          VideoQalityUrls(
-            quality: 360,
-            url: widget.videoUrl,
-          ),
-          VideoQalityUrls(
-            quality: 720,
-            url: widget.videoUrl,
-          ),
+          VideoQalityUrls(quality: 360, url: widget.videoUrl),
+          VideoQalityUrls(quality: 720, url: widget.videoUrl),
         ],
       ),
     )..initialise();
     super.initState();
-    
 
     if (widget.lessonId != null) {
       timer = Timer.periodic(
-          const Duration(seconds: 5), (Timer t) => updateWatchHistory());
+        const Duration(seconds: 5),
+        (Timer t) => updateWatchHistory(),
+      );
     }
   }
-
-  
 
   Future<void> updateWatchHistory() async {
     if (controller.isVideoPlaying) {
@@ -61,8 +58,8 @@ class _PlayVideoFromAssetState extends State<PlayVideoFromNetwork> {
       dynamic url;
       if (token != null && token.isNotEmpty) {
         url = "$BASE_URL/api/update_watch_history/$token";
-        // print(url);
-        // print(controller.currentVideoPosition.inSeconds);
+        // debugPrint(url);
+        // debugPrint(controller.currentVideoPosition.inSeconds);
         try {
           final response = await http.post(
             Uri.parse(url),
@@ -75,17 +72,20 @@ class _PlayVideoFromAssetState extends State<PlayVideoFromNetwork> {
           );
 
           final responseData = json.decode(response.body);
-          // print(responseData);
+          // debugPrint(responseData);
           if (responseData == null) {
             return;
           } else {
             var isCompleted = responseData['is_completed'];
             if (isCompleted == 1) {
-              Provider.of<MyCourses>(context, listen: false)
-                  .updateDripContendLesson(
-                      widget.courseId,
-                      responseData['course_progress'],
-                      responseData['number_of_completed_lessons']);
+              Provider.of<MyCourses>(
+                context,
+                listen: false,
+              ).updateDripContendLesson(
+                widget.courseId,
+                responseData['course_progress'],
+                responseData['number_of_completed_lessons'],
+              );
             }
           }
         } catch (error) {
@@ -112,9 +112,7 @@ class _PlayVideoFromAssetState extends State<PlayVideoFromNetwork> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kBackgroundColor,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       backgroundColor: kBackgroundColor,
       body: SafeArea(
@@ -122,13 +120,10 @@ class _PlayVideoFromAssetState extends State<PlayVideoFromNetwork> {
           child: PodVideoPlayer(
             controller: controller,
             podProgressBarConfig: const PodProgressBarConfig(
-              padding: kIsWeb
-                  ? EdgeInsets.zero
-                  : EdgeInsets.only(
-                      bottom: 20,
-                      left: 20,
-                      right: 20,
-                    ),
+              padding:
+                  kIsWeb
+                      ? EdgeInsets.zero
+                      : EdgeInsets.only(bottom: 20, left: 20, right: 20),
               playingBarColor: Colors.blue,
               circleHandlerColor: Colors.blue,
               backgroundColor: Colors.blueGrey,

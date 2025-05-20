@@ -13,8 +13,12 @@ class PlayVideoFromYoutube extends StatefulWidget {
   final int courseId;
   final int? lessonId;
   final String videoUrl;
-  const PlayVideoFromYoutube(
-      {super.key, required this.courseId, this.lessonId, required this.videoUrl});
+  const PlayVideoFromYoutube({
+    super.key,
+    required this.courseId,
+    this.lessonId,
+    required this.videoUrl,
+  });
 
   @override
   State<PlayVideoFromYoutube> createState() => _PlayVideoFromVimeoIdState();
@@ -39,7 +43,9 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromYoutube> {
 
     if (widget.lessonId != null) {
       timer = Timer.periodic(
-          const Duration(seconds: 5), (Timer t) => updateWatchHistory());
+        const Duration(seconds: 5),
+        (Timer t) => updateWatchHistory(),
+      );
     }
   }
 
@@ -49,8 +55,8 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromYoutube> {
       dynamic url;
       if (token != null && token.isNotEmpty) {
         url = "$BASE_URL/api/update_watch_history/$token";
-        // print(url);
-        // print(controller.currentVideoPosition.inSeconds);
+        // debugPrint(url);
+        // debugPrint(controller.currentVideoPosition.inSeconds);
         try {
           final response = await http.post(
             Uri.parse(url),
@@ -63,22 +69,25 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromYoutube> {
           );
 
           final responseData = json.decode(response.body);
-          // print(responseData);
+          // debugPrint(responseData);
           if (responseData == null) {
             return;
           } else {
             var isCompleted = responseData['is_completed'];
             if (isCompleted == 1) {
               // ignore: use_build_context_synchronously
-              Provider.of<MyCourses>(context, listen: false)
-                  .updateDripContendLesson(
-                      widget.courseId,
-                      responseData['course_progress'],
-                      responseData['number_of_completed_lessons']);
+              Provider.of<MyCourses>(
+                context,
+                listen: false,
+              ).updateDripContendLesson(
+                widget.courseId,
+                responseData['course_progress'],
+                responseData['number_of_completed_lessons'],
+              );
             }
           }
         } catch (error) {
-          // print(error.toString());
+          // debugPrint(error.toString());
           rethrow;
         }
       } else {
@@ -102,16 +111,10 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromYoutube> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kBackgroundColor,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SafeArea(
-        child: Center(
-          child: PodVideoPlayer(
-            controller: controller,
-          ),
-        ),
+        child: Center(child: PodVideoPlayer(controller: controller)),
       ),
     );
   }

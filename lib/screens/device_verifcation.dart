@@ -35,7 +35,7 @@ Future<UpdateVerifyModel> verifyEmail(
     },
   );
 
-  // print(response.body);
+  // debugPrint(response.body);
 
   if (response.statusCode == 200) {
     final String responseString = response.body;
@@ -54,7 +54,7 @@ Future<UpdateVerifyModel> resendCode(String email, String token) async {
     body: {'auth_token': token},
   );
 
-  // print(response.body);
+  // debugPrint(response.body);
 
   if (response.statusCode == 200) {
     final String responseString = response.body;
@@ -296,7 +296,7 @@ class _DeviceVerificationScreenState extends State<DeviceVerificationScreen> {
                                       context,
                                     ).requestFocus(_selectedFocus);
                                   }
-                                  // print(_selectedController.text);
+                                  // debugPrint(_selectedController.text);
                                 },
                                 child: Container(
                                   alignment: Alignment.center,
@@ -338,7 +338,7 @@ class _DeviceVerificationScreenState extends State<DeviceVerificationScreen> {
                                           // if user enters value on a box that already has a value
                                           // the old value will be replaced by the new one
                                           if (val.length > 1) {
-                                            // print('hi');
+                                            // debugPrint('hi');
                                             _selectedController.clear();
                                             setState(() {
                                               _selectedController.text =
@@ -369,7 +369,7 @@ class _DeviceVerificationScreenState extends State<DeviceVerificationScreen> {
                                                 _controllers[0];
                                           }
                                         } // if val isEmpty (i.e number was deleted from the box) do nothing
-                                        // print(_value);
+                                        // debugPrint(_value);
                                       },
                                     ),
                                   ),

@@ -158,24 +158,24 @@
 //         if (results[0] == 0) {
 //           zoom.onMeetingStatus().listen((status) {
 //             if (kDebugMode) {
-//               print(
+//               debugPrint(
 //                   "[Meeting Status Stream] : " + status[0] + " - " + status[1]);
 //             }
 //             if (_isMeetingEnded(status[0])) {
 //               if (kDebugMode) {
-//                 print("[Meeting Status] :- Ended");
+//                 debugPrint("[Meeting Status] :- Ended");
 //               }
 //               timer.cancel();
 //             }
 //           });
 //           if (kDebugMode) {
-//             print("listen on event channel");
+//             debugPrint("listen on event channel");
 //           }
 //           zoom.joinMeeting(meetingOptions).then((joinMeetingResult) {
 //             timer = Timer.periodic(const Duration(seconds: 2), (timer) {
 //               zoom.meetingStatus(meetingOptions.meetingId!).then((status) {
 //                 if (kDebugMode) {
-//                   print("[Meeting Status Polling] : " +
+//                   debugPrint("[Meeting Status Polling] : " +
 //                       status[0] +
 //                       " - " +
 //                       status[1]);
@@ -186,7 +186,7 @@
 //         }
 //       }).catchError((error) {
 //         if (kDebugMode) {
-//           print("[Error Generated] : " + error);
+//           debugPrint("[Error Generated] : " + error);
 //         }
 //       });
 //     } else {
@@ -241,18 +241,18 @@
 //       if (results[0] == 0) {
 //         zoom.onMeetingStatus().listen((status) {
 //           if (kDebugMode) {
-//             print("[Meeting Status Stream] : " + status[0] + " - " + status[1]);
+//             debugPrint("[Meeting Status Stream] : " + status[0] + " - " + status[1]);
 //           }
 //           if (_isMeetingEnded(status[0])) {
 //             if (kDebugMode) {
-//               print("[Meeting Status] :- Ended");
+//               debugPrint("[Meeting Status] :- Ended");
 //             }
 //             timer.cancel();
 //           }
 //           if (status[0] == "MEETING_STATUS_INMEETING") {
 //             zoom.meetinDetails().then((meetingDetailsResult) {
 //               if (kDebugMode) {
-//                 print("[MeetingDetailsResult] :- " +
+//                 debugPrint("[MeetingDetailsResult] :- " +
 //                     meetingDetailsResult.toString());
 //               }
 //             });
@@ -260,13 +260,13 @@
 //         });
 //         zoom.startMeeting(meetingOptions).then((loginResult) {
 //           if (kDebugMode) {
-//             print(
+//             debugPrint(
 //                 "[LoginResult] :- " + loginResult[0] + " - " + loginResult[1]);
 //           }
 //           if (loginResult[0] == "SDK ERROR") {
 //             //SDK INIT FAILED
 //             if (kDebugMode) {
-//               print((loginResult[1]).toString());
+//               debugPrint((loginResult[1]).toString());
 //             }
 //             return;
 //           } else if (loginResult[0] == "LOGIN ERROR") {
@@ -274,26 +274,26 @@
 //             if (kDebugMode) {
 //               if (loginResult[1] ==
 //                   ZoomError.ZOOM_AUTH_ERROR_WRONG_ACCOUNTLOCKED) {
-//                 print("Multiple Failed Login Attempts");
+//                 debugPrint("Multiple Failed Login Attempts");
 //               }
-//               print((loginResult[1]).toString());
+//               debugPrint((loginResult[1]).toString());
 //             }
 //             return;
 //           } else {
 //             //LOGIN SUCCESS & MEETING STARTED - WITH SUCCESS CODE 200
 //             if (kDebugMode) {
-//               print((loginResult[0]).toString());
+//               debugPrint((loginResult[0]).toString());
 //             }
 //           }
 //         }).catchError((error) {
 //           if (kDebugMode) {
-//             print("[Error Generated] : " + error);
+//             debugPrint("[Error Generated] : " + error);
 //           }
 //         });
 //       }
 //     }).catchError((error) {
 //       if (kDebugMode) {
-//         print("[Error Generated] : " + error);
+//         debugPrint("[Error Generated] : " + error);
 //       }
 //     });
 //   }
@@ -338,18 +338,18 @@
 //       if (results[0] == 0) {
 //         zoom.onMeetingStatus().listen((status) {
 //           if (kDebugMode) {
-//             print("[Meeting Status Stream] : " + status[0] + " - " + status[1]);
+//             debugPrint("[Meeting Status Stream] : " + status[0] + " - " + status[1]);
 //           }
 //           if (_isMeetingEnded(status[0])) {
 //             if (kDebugMode) {
-//               print("[Meeting Status] :- Ended");
+//               debugPrint("[Meeting Status] :- Ended");
 //             }
 //             timer.cancel();
 //           }
 //           if (status[0] == "MEETING_STATUS_INMEETING") {
 //             zoom.meetinDetails().then((meetingDetailsResult) {
 //               if (kDebugMode) {
-//                 print("[MeetingDetailsResult] :- " +
+//                 debugPrint("[MeetingDetailsResult] :- " +
 //                     meetingDetailsResult.toString());
 //               }
 //             });
@@ -357,29 +357,29 @@
 //         });
 //         zoom.startMeetingNormal(meetingOptions).then((loginResult) {
 //           if (kDebugMode) {
-//             print("[LoginResult] :- " + loginResult.toString());
+//             debugPrint("[LoginResult] :- " + loginResult.toString());
 //           }
 //           if (loginResult[0] == "SDK ERROR") {
 //             //SDK INIT FAILED
 //             if (kDebugMode) {
-//               print((loginResult[1]).toString());
+//               debugPrint((loginResult[1]).toString());
 //             }
 //           } else if (loginResult[0] == "LOGIN ERROR") {
 //             //LOGIN FAILED - WITH ERROR CODES
 //             if (kDebugMode) {
-//               print((loginResult[1]).toString());
+//               debugPrint((loginResult[1]).toString());
 //             }
 //           } else {
 //             //LOGIN SUCCESS & MEETING STARTED - WITH SUCCESS CODE 200
 //             if (kDebugMode) {
-//               print((loginResult[0]).toString());
+//               debugPrint((loginResult[0]).toString());
 //             }
 //           }
 //         });
 //       }
 //     }).catchError((error) {
 //       if (kDebugMode) {
-//         print("[Error Generated] : " + error);
+//         debugPrint("[Error Generated] : " + error);
 //       }
 //     });
 //   }

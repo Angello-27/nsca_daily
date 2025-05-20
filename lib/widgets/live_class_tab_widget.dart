@@ -156,16 +156,16 @@ class _LiveClassTabWidgetState extends State<LiveClassTabWidget> {
                   onPressed: () async {
                     // final token = await SharedPreferenceHelper().getAuthToken();
                     // final url = '$BASE_URL/api/zoom_mobile_web_view/${widget.courseId}/$token';
-                    // print(_url);
+                    // debugPrint(_url);
                     // Navigator.push(context, MaterialPageRoute(builder: (context) => WebViewScreen(url: url)));
-                    // print(dataSnapshot.data!.zoomLiveClassDetails!.zoomMeetingId
+                    // debugPrint(dataSnapshot.data!.zoomLiveClassDetails!.zoomMeetingId
                     //     .toString());
-                    // print(dataSnapshot
+                    // debugPrint(dataSnapshot
                     //     .data!.zoomLiveClassDetails!.zoomMeetingPassword
                     //     .toString());
-                    // print(
+                    // debugPrint(
                     //     dataSnapshot.data!.zoomLiveClass!.clientId.toString());
-                    // print(dataSnapshot.data!.zoomLiveClass!.clientSecret
+                    // debugPrint(dataSnapshot.data!.zoomLiveClass!.clientSecret
                     //     .toString());
 
                     final url =

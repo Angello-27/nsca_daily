@@ -41,7 +41,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     try {
       results = await _connectivity.checkConnectivity();
     } on PlatformException catch (e) {
-      print('Error comprobando conectividad: $e');
+      debugPrint('Error comprobando conectividad: $e');
       return;
     }
     if (!mounted) return;
