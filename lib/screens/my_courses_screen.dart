@@ -67,6 +67,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
 
   // 5) Callback recibe la lista y la guarda:
   void _updateConnectionStatus(List<ConnectivityResult> results) {
+    if (!mounted) return;
     setState(() {
       _connectionStatus = results;
     });
@@ -74,7 +75,11 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
 
   @override
   void dispose() {
+    // 1) Cancelas la suscripción a la conectividad
     _connectivitySubscription.cancel();
+    // 2) Disposes de los controladores
+    _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -93,12 +98,24 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
   }
 
   Future<void> addonStatus() async {
-    var url = '$BASE_URL/api/addon_status?unique_identifier=course_bundle';
-    final response = await http.get(Uri.parse(url));
-    setState(() {
-      _isLoading = false;
-      bundleStatus = json.decode(response.body)['status'];
-    });
+    final url = '$BASE_URL/api/addon_status?unique_identifier=course_bundle';
+    try {
+      final response = await http.get(Uri.parse(url));
+      final status = json.decode(response.body)['status'];
+      // **Comprueba que el State siga montado antes de setState**
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        bundleStatus = status;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        bundleStatus = false;
+      });
+      debugPrint('Error en addonStatus: $e');
+    }
   }
 
   @override
@@ -275,7 +292,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
                     padding: const EdgeInsets.all(10.0),
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
+                    crossAxisCount: 1,
                     itemCount: myCourseData.items.length,
                     itemBuilder: (ctx, index) {
                       return MyCourseGrid(myCourse: myCourseData.items[index]);

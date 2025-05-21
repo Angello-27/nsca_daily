@@ -1,12 +1,12 @@
 // ignore_for_file: constant_identifier_names
 import 'package:flutter/material.dart';
 
-const BASE_URL = 'https://www.nscaacademy.org';
+const String BASE_URL = 'https://www.nscaacademy.org';
 // Example: const BASE_URL = 'http://192.168.0.119/academy-demo';
 
 // list of colors that we use in our app
 const kBackgroundColor = Color(0xFFF5F9FA);
-const kPrimaryColor = Color(0xFF754FFE);
+const kPrimaryColor = Color(0xFFFFC600);
 const kDarkButtonBg = Color(0xFF273546);
 const kSecondaryColor = Color(0xFF808080);
 const kSelectItemColor = Color(0xFF000000);
@@ -57,9 +57,4 @@ const kDefaultShadow = BoxShadow(
   color: Colors.black12, // Black color with 12% opacity
 );
 
-enum CoursesPageData {
-  Category,
-  Filter,
-  Search,
-  All,
-}
+enum CoursesPageData { Category, Filter, Search, All }

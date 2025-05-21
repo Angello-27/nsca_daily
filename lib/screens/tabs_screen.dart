@@ -1,7 +1,7 @@
 import 'dart:convert';
 import '../constants.dart';
 import '../widgets/app_bar.dart';
-import '../widgets/filter_widget.dart';
+//import '../widgets/filter_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'account_screen.dart';
@@ -85,7 +85,7 @@ class _TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  void _showFilterModal(BuildContext ctx) {
+  /*void _showFilterModal(BuildContext ctx) {
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
@@ -93,7 +93,7 @@ class _TabsScreenState extends State<TabsScreen> {
         return const FilterWidget();
       },
     );
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -101,14 +101,14 @@ class _TabsScreenState extends State<TabsScreen> {
       backgroundColor: kBackgroundColor,
       appBar: const CustomAppBar(),
       body: _pages[_selectedPageIndex],
-      floatingActionButton:
+      /*floatingActionButton:
           _selectedPageIndex != 3
               ? FloatingActionButton(
                 onPressed: () => _showFilterModal(context),
                 backgroundColor: kDarkButtonBg,
                 child: const Icon(Icons.filter_list),
               )
-              : null,
+              : null,*/
       bottomNavigationBar: BottomNavigationBar(
         onTap: _selectPage,
         items: const [
@@ -122,13 +122,13 @@ class _TabsScreenState extends State<TabsScreen> {
             backgroundColor: kBackgroundColor,
             icon: Icon(Icons.school_outlined),
             activeIcon: Icon(Icons.school),
-            label: 'My Course',
+            label: 'Curriculum',
           ),
           BottomNavigationBarItem(
             backgroundColor: kBackgroundColor,
-            icon: Icon(Icons.favorite_border),
-            activeIcon: Icon(Icons.favorite),
-            label: 'Wishlist',
+            icon: Icon(Icons.aod_outlined),
+            activeIcon: Icon(Icons.aod_rounded),
+            label: 'Daily report',
           ),
           BottomNavigationBarItem(
             backgroundColor: kBackgroundColor,

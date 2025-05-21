@@ -11,10 +11,7 @@ import 'package:http/http.dart' as http;
 class MyCourseGrid extends StatefulWidget {
   final MyCourse? myCourse;
 
-  const MyCourseGrid({
-    super.key,
-    @required this.myCourse,
-  });
+  const MyCourseGrid({super.key, @required this.myCourse});
 
   @override
   State<MyCourseGrid> createState() => _MyCourseGridState();
@@ -32,16 +29,25 @@ class _MyCourseGridState extends State<MyCourseGrid> {
   }
 
   Future<void> addonStatus(String identifier) async {
-    var url = '$BASE_URL/api/addon_status?unique_identifier=$identifier';
-    final response = await http.get(Uri.parse(url));
-    if (identifier == 'live-class') {
+    final url = '$BASE_URL/api/addon_status?unique_identifier=$identifier';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final status = json.decode(response.body)['status'];
+
+      // Si el State ya no está montado, salimos sin setState
+      if (!mounted) return;
+
       setState(() {
-        liveClassStatus = json.decode(response.body)['status'];
+        if (identifier == 'live-class') {
+          liveClassStatus = status;
+        } else {
+          courseForumStatus = status;
+        }
       });
-    } else if (identifier == 'forum') {
-      setState(() {
-        courseForumStatus = json.decode(response.body)['status'];
-      });
+    } catch (e) {
+      // Opcional: maneja errores o simplemente ignóralos
+      debugPrint('Error en addonStatus($identifier): $e');
     }
   }
 
@@ -59,29 +65,18 @@ class _MyCourseGridState extends State<MyCourseGrid> {
         } else if (tabLength == 1) {
           tabLength = 2;
         }
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-          return MyCourseDetailScreen(
-              courseId: widget.myCourse!.id!.toInt(),
-              len: tabLength,
-              enableDripContent: widget.myCourse!.enableDripContent.toString());
-        }));
-        // if (widget.myCourse!.enableDripContent == '0') {
-        //   Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-        //     return MyCourseDetailScreen(
-        //         courseId: widget.myCourse!.id!.toInt(),
-        //         len: tabLength,
-        //         enableDripContent:
-        //             widget.myCourse!.enableDripContent.toString());
-        //   }));
-        // } else {
-        //   Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-        //     return DripCOntentCourse(
-        //         courseId: widget.myCourse!.id!.toInt(),
-        //         len: tabLength,
-        //         enableDripContent:
-        //             widget.myCourse!.enableDripContent.toString());
-        //   }));
-        // }
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) {
+              return MyCourseDetailScreen(
+                courseId: widget.myCourse!.id!.toInt(),
+                len: tabLength,
+                enableDripContent:
+                    widget.myCourse!.enableDripContent.toString(),
+              );
+            },
+          ),
+        );
       },
       child: SizedBox(
         width: double.infinity,
@@ -103,7 +98,7 @@ class _MyCourseGridState extends State<MyCourseGrid> {
                     child: FadeInImage.assetNetwork(
                       placeholder: 'assets/images/loading_animated.gif',
                       image: widget.myCourse!.thumbnail.toString(),
-                      height: 120,
+                      height: 140,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
@@ -111,8 +106,12 @@ class _MyCourseGridState extends State<MyCourseGrid> {
                 ],
               ),
               Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 5, right: 8, left: 8, top: 5),
+                padding: const EdgeInsets.only(
+                  bottom: 5,
+                  right: 8,
+                  left: 8,
+                  top: 5,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,17 +119,16 @@ class _MyCourseGridState extends State<MyCourseGrid> {
                     SizedBox(
                       height: 42,
                       child: CustomText(
-                        text: widget.myCourse!.title!.length < 38
-                            ? widget.myCourse!.title
-                            : widget.myCourse!.title!.substring(0, 37),
+                        text:
+                            widget.myCourse!.title!.length < 38
+                                ? widget.myCourse!.title
+                                : widget.myCourse!.title!.substring(0, 37),
                         fontSize: 14,
                         colors: kTextLightColor,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const SizedBox(
-                      height: 5,
-                    ),
+                    const SizedBox(height: 5),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
                       child: Row(
@@ -164,21 +162,17 @@ class _MyCourseGridState extends State<MyCourseGrid> {
                         ],
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
                       child: LinearPercentIndicator(
                         lineHeight: 8.0,
                         percent: widget.myCourse!.courseCompletion! / 100,
                         progressColor: kPrimaryColor,
-                        backgroundColor: kBackgroundColor,
+                        backgroundColor: kTextColor,
                       ),
                     ),
-                    const SizedBox(
-                      height: 5,
-                    ),
+                    const SizedBox(height: 5),
                     Padding(
                       padding: const EdgeInsets.all(5.0),
                       child: Row(

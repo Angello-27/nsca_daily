@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import '../constants.dart';
 import '../screens/auth_screen_private.dart';
@@ -20,17 +22,25 @@ class _SplashScreenState extends State<SplashScreen> {
   dynamic courseAccessibility;
 
   systemSettings() async {
-    var url = "$BASE_URL/api/system_settings";
-    var response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      setState(() {
-        courseAccessibility = data['course_accessibility'];
-      });
-    } else {
-      setState(() {
-        courseAccessibility = '';
-      });
+    try {
+      final url = Uri.parse('$BASE_URL/api/system_settings');
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() => courseAccessibility = data['course_accessibility']);
+      } else {
+        setState(() => courseAccessibility = '');
+        debugPrint('Error ${response.statusCode} en system_settings');
+      }
+    } on SocketException catch (e) {
+      setState(() => courseAccessibility = '');
+      debugPrint('Sin conexión o fallo DNS: $e');
+    } on TimeoutException catch (e) {
+      setState(() => courseAccessibility = '');
+      debugPrint('Timeout al conectar: $e');
+    } catch (e) {
+      setState(() => courseAccessibility = '');
+      debugPrint('Otro error en systemSettings: $e');
     }
   }
 

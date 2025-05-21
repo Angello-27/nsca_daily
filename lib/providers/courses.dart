@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import '../models/course.dart';
 import '../models/course_detail.dart';
 import '../models/lesson.dart';
@@ -40,19 +41,22 @@ class Courses with ChangeNotifier {
   }
 
   Future<void> fetchTopCourses() async {
-    var url = '$BASE_URL/api/top_courses';
+    final url = Uri.parse('$BASE_URL/api/top_courses');
     try {
-      final response = await http.get(Uri.parse(url));
-      final extractedData = json.decode(response.body) as List;
-      // ignore: unnecessary_null_comparison
-      if (extractedData == null) {
-        return;
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
+      if (response.statusCode == 200) {
+        final extractedData = json.decode(response.body) as List;
+        _topItems = buildCourseList(extractedData);
+        notifyListeners();
+      } else {
+        debugPrint('Top courses: statusCode = ${response.statusCode}');
       }
-      // debugPrint(extractedData);
-      _topItems = buildCourseList(extractedData);
-      notifyListeners();
-    } catch (error) {
-      rethrow;
+    } on SocketException catch (e) {
+      debugPrint('No hay conexión de red: $e');
+    } on FormatException catch (e) {
+      debugPrint('Respuesta inválida: $e');
+    } catch (e) {
+      debugPrint('Error inesperado al fetchTopCourses: $e');
     }
   }
 
