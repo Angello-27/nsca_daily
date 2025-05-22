@@ -634,6 +634,7 @@ class _MyCourseDetailScreenState extends State<MyCourseDetailScreen>
       context,
       listen: false,
     ).findById(widget.courseId);
+
     final sections =
         Provider.of<MyCourses>(context, listen: false).sectionItems;
     myCourseBody() {

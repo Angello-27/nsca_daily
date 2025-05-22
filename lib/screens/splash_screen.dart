@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -21,55 +19,53 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   dynamic courseAccessibility;
 
-  systemSettings() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadSystemSettings();
+    _startDelay();
+  }
+
+  Future<void> _loadSystemSettings() async {
     try {
       final url = Uri.parse('$BASE_URL/api/system_settings');
       final response = await http.get(url).timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() => courseAccessibility = data['course_accessibility']);
-      } else {
-        setState(() => courseAccessibility = '');
-        debugPrint('Error ${response.statusCode} en system_settings');
-      }
-    } on SocketException catch (e) {
+      final data =
+          (response.statusCode == 200) ? json.decode(response.body) : null;
+
+      if (!mounted) return;
+      setState(() {
+        courseAccessibility = data != null ? data['course_accessibility'] : '';
+      });
+    } on SocketException {
+      if (!mounted) return;
       setState(() => courseAccessibility = '');
-      debugPrint('Sin conexión o fallo DNS: $e');
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
+      if (!mounted) return;
       setState(() => courseAccessibility = '');
-      debugPrint('Timeout al conectar: $e');
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => courseAccessibility = '');
-      debugPrint('Otro error en systemSettings: $e');
     }
   }
 
-  @override
-  void initState() {
-    donLogin();
-    systemSettings();
-    super.initState();
-  }
-
-  void donLogin() {
-    String? token;
+  void _startDelay() {
     Future.delayed(const Duration(seconds: 3), () async {
-      token = await SharedPreferenceHelper().getAuthToken();
-      if (token != null && token!.isNotEmpty) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const TabsScreen()),
-        );
-      } else {
-        if (courseAccessibility == 'publicly') {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const TabsScreen()),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AuthScreenPrivate()),
-          );
-        }
-      }
+      // Si ya no estamos montados, salimos
+      if (!mounted) return;
+
+      final token = await SharedPreferenceHelper().getAuthToken();
+
+      if (!mounted) return;
+      final next =
+          (token != null && token.isNotEmpty) ||
+                  courseAccessibility == 'publicly'
+              ? const TabsScreen()
+              : const AuthScreenPrivate();
+
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => next));
     });
   }
 
@@ -78,10 +74,11 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: Center(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
+        child: Image.asset(
+          'assets/images/splash.png',
+          fit: BoxFit.cover,
           width: double.infinity,
-          child: Image.asset('assets/images/splash.png', fit: BoxFit.cover),
+          height: double.infinity,
         ),
       ),
     );

@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, prefer_const_constructors
 
+import 'package:nsca_daily/providers/my_courses.dart';
+
 import '../models/common_functions.dart';
 import '../providers/shared_pref_helper.dart';
 import '../widgets/custom_text.dart';
@@ -43,42 +45,49 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   int? selected;
 
   @override
-  void didChangeDependencies() async {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (_isInit) {
-      var token = await SharedPreferenceHelper().getAuthToken();
-      setState(() {
-        _isLoading = true;
-        // _authToken = Provider.of<Auth>(context, listen: false).token;
-        if (token != null && token.isNotEmpty) {
-          _isAuth = true;
-        } else {
-          _isAuth = false;
-        }
-      });
+      _loadData();
+      _isInit = false;
+    }
+  }
 
-      courseId = ModalRoute.of(context)!.settings.arguments as int;
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
 
+    final token = await SharedPreferenceHelper().getAuthToken();
+    _isAuth = token != null && token.isNotEmpty;
+
+    // Obtén el ID que vino en los argumentos
+    courseId = ModalRoute.of(context)!.settings.arguments as int;
+
+    // 1) Intenta cargar el curso desde Courses
+    try {
       loadedCourse = Provider.of<Courses>(
         context,
         listen: false,
       ).findById(courseId);
-
-      Provider.of<Courses>(
+    } on StateError {
+      // 2) Si falla (no existe en Courses), carga desde MyCourses
+      loadedCourse = Provider.of<MyCourses>(
         context,
         listen: false,
-      ).fetchCourseDetailById(courseId).then((_) {
-        loadedCourseDetail =
-            Provider.of<Courses>(context, listen: false).getCourseDetail;
-        // ignore: unused_local_variable
-        // loadedCourse =
-        //     Provider.of<Courses>(context, listen: false).findById(courseId);
-        setState(() {
-          _isLoading = false;
-        });
-      });
+      ).findById(courseId);
     }
-    _isInit = false;
-    super.didChangeDependencies();
+
+    // 3) Luego carga los detalles vía el provider correspondiente
+    final courseProvider =
+        _isAuth
+            ? Provider.of<Courses>(context, listen: false)
+            : Provider.of<MyCourses>(context, listen: false);
+
+    await courseProvider.fetchCourseDetailById(courseId);
+
+    setState(() {
+      loadedCourseDetail = courseProvider.getCourseDetail;
+      _isLoading = false;
+    });
   }
 
   void _launchURL(String url) async =>
@@ -366,7 +375,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                                     if (_authToken != null) {
                                       if (loadedCourse.isFreeCourse == '1') {
                                         // final _url = BASE_URL + '/api/enroll_free_course?course_id=$courseId&auth_token=$_authToken';
-                                        Provider.of<Courses>(
+                                        Provider.of<MyCourses>(
                                               context,
                                               listen: false,
                                             )

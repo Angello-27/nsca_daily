@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:nsca_daily/providers/course_detail_mixin.dart';
+
 import '../models/course.dart';
 import '../models/course_detail.dart';
-import '../models/lesson.dart';
-import '../models/section.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
 import 'shared_pref_helper.dart';
 
-class Courses with ChangeNotifier {
+class Courses with ChangeNotifier, CourseDetailMixin {
   List<Course> _items = [];
   List<Course> _topItems = [];
   List<CourseDetail> _courseDetailsitems = [];
@@ -24,20 +24,25 @@ class Courses with ChangeNotifier {
     return [..._topItems];
   }
 
-  CourseDetail get getCourseDetail {
+  /*CourseDetail get getCourseDetail {
     return _courseDetailsitems.first;
-  }
+  }*/
 
   int get itemCount {
     return _items.length;
   }
 
   Course findById(int id) {
-    // return _topItems.firstWhere((course) => course.id == id);
-    return _items.firstWhere(
-      (course) => course.id == id,
-      orElse: () => _topItems.firstWhere((course) => course.id == id),
-    );
+    // Primero intenta en _items
+    for (var c in _items) {
+      if (c.id == id) return c;
+    }
+    // Luego en _topItems
+    for (var c in _topItems) {
+      if (c.id == id) return c;
+    }
+    // Si no existe, lanza con mensaje claro o devuelve un placeholder
+    throw StateError('Course with id $id not found.');
   }
 
   Future<void> fetchTopCourses() async {
@@ -204,56 +209,6 @@ class Courses with ChangeNotifier {
     }
   }
 
-  Future<void> fetchCourseDetailById(int courseId) async {
-    var authToken = await SharedPreferenceHelper().getAuthToken();
-    var url = '$BASE_URL/api/course_details_by_id?course_id=$courseId';
-
-    if (authToken != null) {
-      url =
-          '$BASE_URL/api/course_details_by_id?auth_token=$authToken&course_id=$courseId';
-    }
-
-    try {
-      final response = await http.get(Uri.parse(url));
-      final extractedData = json.decode(response.body) as List;
-      if (extractedData.isEmpty) {
-        return;
-      }
-
-      final List<CourseDetail> loadedCourseDetails = [];
-      for (var courseData in extractedData) {
-        loadedCourseDetails.add(
-          CourseDetail(
-            courseId: int.parse(courseData['id']),
-            courseIncludes:
-                (courseData['includes'] as List<dynamic>).cast<String>(),
-            courseRequirements:
-                (courseData['requirements'] as List<dynamic>).cast<String>(),
-            courseOutcomes:
-                (courseData['outcomes'] as List<dynamic>).cast<String>(),
-            isWishlisted: courseData['is_wishlisted'],
-            isPurchased:
-                (courseData['is_purchased'] is int)
-                    ? courseData['is_purchased'] == 1
-                        ? true
-                        : false
-                    : courseData['is_purchased'],
-            mSection: buildCourseSections(
-              courseData['sections'] as List<dynamic>,
-            ),
-          ),
-        );
-      }
-      // debugPrint(loadedCourseDetails.first.courseOutcomes.last);
-      // _items = buildCourseList(extractedData);
-      _courseDetailsitems = loadedCourseDetails;
-      // _courseDetail = loadedCourseDetails.first;
-      notifyListeners();
-    } catch (error) {
-      rethrow;
-    }
-  }
-
   Future<void> getEnrolled(int courseId) async {
     final authToken = await SharedPreferenceHelper().getAuthToken();
     var url =
@@ -269,52 +224,5 @@ class Courses with ChangeNotifier {
     } catch (error) {
       rethrow;
     }
-  }
-
-  List<Section> buildCourseSections(List extractedSections) {
-    final List<Section> loadedSections = [];
-
-    for (var sectionData in extractedSections) {
-      loadedSections.add(
-        Section(
-          id: int.parse(sectionData['id']),
-          numberOfCompletedLessons: sectionData['completed_lesson_number'],
-          title: sectionData['title'],
-          totalDuration: sectionData['total_duration'],
-          lessonCounterEnds: sectionData['lesson_counter_ends'],
-          lessonCounterStarts: sectionData['lesson_counter_starts'],
-          mLesson: buildCourseLessons(sectionData['lessons'] as List<dynamic>),
-        ),
-      );
-    }
-    // debugPrint(loadedSections.first.title);
-    return loadedSections;
-  }
-
-  List<Lesson> buildCourseLessons(List extractedLessons) {
-    final List<Lesson> loadedLessons = [];
-
-    for (var lessonData in extractedLessons) {
-      loadedLessons.add(
-        Lesson(
-          id: int.parse(lessonData['id']),
-          title: lessonData['title'],
-          duration: lessonData['duration'],
-          lessonType: lessonData['lesson_type'],
-          isFree: lessonData['is_free'],
-          videoUrl: lessonData['video_url'],
-          summary: lessonData['summary'],
-          attachmentType: lessonData['attachment_type'],
-          attachment: lessonData['attachment'],
-          attachmentUrl: lessonData['attachment_url'],
-          isCompleted: lessonData['is_completed'].toString(),
-          videoUrlWeb: lessonData['video_url_web'],
-          videoTypeWeb: lessonData['video_type_web'],
-          vimeoVideoId: lessonData['vimeo_video_id'],
-        ),
-      );
-    }
-    // debugPrint(loadedLessons.first.title);
-    return loadedLessons;
   }
 }

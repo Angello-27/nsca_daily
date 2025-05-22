@@ -38,7 +38,7 @@ const iLongArrowRightColor = Color(0xFF559595);
 
 const kDefaultInputBorder = OutlineInputBorder(
   borderRadius: BorderRadius.all(Radius.circular(12.0)),
-  borderSide: BorderSide(color: Colors.white, width: 2),
+  borderSide: BorderSide(color: kTimeBackColor, width: 1),
 );
 
 const kDefaultFocusInputBorder = OutlineInputBorder(

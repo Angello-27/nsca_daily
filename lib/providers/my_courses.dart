@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:nsca_daily/providers/course_detail_mixin.dart';
+
 import '../models/lesson.dart';
 import '../models/my_course.dart';
 import '../models/section.dart';
@@ -8,7 +10,7 @@ import 'package:http/http.dart' as http;
 import '../constants.dart';
 import 'shared_pref_helper.dart';
 
-class MyCourses with ChangeNotifier {
+class MyCourses with ChangeNotifier, CourseDetailMixin {
   List<MyCourse> _items = [];
   List<Section> _sectionItems = [];
 
