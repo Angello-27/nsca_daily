@@ -34,7 +34,9 @@ Map<String, String> getOutcomes({bool excelView = false}) {
     'outcome07': 'Referral to a human resource organization',
     'outcome08': 'Home / hospital or other visit',
     'outcome09': 'Religious Services & Invocations',
-    'outcome10': '“MUST REPORT”' + ' - linked to a detailed report form',
+    'outcome10':
+        '“MUST REPORT”'
+        ' - linked to a detailed report form',
   };
 }
 
