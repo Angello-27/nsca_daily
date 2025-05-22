@@ -43,7 +43,7 @@ const kDefaultInputBorder = OutlineInputBorder(
 
 const kDefaultFocusInputBorder = OutlineInputBorder(
   borderRadius: BorderRadius.all(Radius.circular(12.0)),
-  borderSide: BorderSide(color: kBlueColor, width: 2),
+  borderSide: BorderSide(color: kStarColor, width: 2),
 );
 const kDefaultFocusErrorBorder = OutlineInputBorder(
   borderSide: BorderSide(color: kRedColor),

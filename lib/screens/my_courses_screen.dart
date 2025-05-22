@@ -252,6 +252,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
             height: MediaQuery.of(context).size.height * .7,
             child: Center(
               child: CircularProgressIndicator(
+                // ignore: deprecated_member_use
                 color: kPrimaryColor.withOpacity(0.7),
               ),
             ),
@@ -259,6 +260,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
         } else {
           if (dataSnapshot.error != null) {
             //error
+            // ignore: unrelated_type_equality_checks
             return _connectionStatus == ConnectivityResult.none
                 ? Center(
                   child: Column(
@@ -316,12 +318,14 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
           if (dataSnapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
+                // ignore: deprecated_member_use
                 color: kPrimaryColor.withOpacity(0.7),
               ),
             );
           } else {
             if (dataSnapshot.error != null) {
               //error
+              // ignore: unrelated_type_equality_checks
               return _connectionStatus == ConnectivityResult.none
                   ? Center(
                     child: Column(

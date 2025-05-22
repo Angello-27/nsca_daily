@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'account_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
-import 'my_wishlist_screen.dart';
+import 'daily_report_screen.dart';
 import 'my_courses_screen.dart';
 
 class TabsScreen extends StatefulWidget {
@@ -70,7 +70,7 @@ class _TabsScreenState extends State<TabsScreen> {
         _pages = [
           const HomeScreen(),
           const MyCoursesScreen(),
-          const MyWishlistScreen(),
+          const DailyReportScreen(),
           const AccountScreen(),
         ];
       }
