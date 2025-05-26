@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:nsca_daily/providers/daily_report.dart';
+
 import './providers/bundles.dart';
 import './providers/course_forum.dart';
 import './screens/account_remove_screen.dart';
@@ -72,6 +74,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => Bundles()),
         ChangeNotifierProvider(create: (ctx) => MyBundles()),
         ChangeNotifierProvider(create: (ctx) => CourseForum()),
+        ChangeNotifierProvider(create: (_) => DailyReportProvider()),
       ],
       child: Consumer<Auth>(
         builder:

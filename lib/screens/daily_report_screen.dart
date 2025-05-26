@@ -12,43 +12,11 @@ class DailyReportScreen extends StatefulWidget {
 
 class _DailyReportScreenState extends State<DailyReportScreen> {
   int _currentStep = 0;
-
+  // Date
+  DateTime? _reportDate;
   // Form keys for each step
   late final List<GlobalKey<FormState>> _stepKeys;
   late final TextEditingController _totalController;
-
-  // Date
-  DateTime? _reportDate;
-
-  // Student data
-  // Hours & students
-  int? _workingHours;
-  int? _studentsMale;
-  int? _studentsFemale;
-  int? _studentsTotal;
-  // Student ethnicity
-  String? _studentsAge;
-  final Map<String, int> _studentEthnic = {};
-  // Student topics & outcomes
-  final Set<String> _studentTopics = {};
-  final Set<String> _studentOutcomes = {};
-
-  // Faculty data
-  // Faculty total, breakdown & ethnicity
-  int? _facultyTotal;
-  final Map<String, int> _facultyGroups = {};
-  final Map<String, int> _facultyEthnic = {};
-  // Faculty topics & outcomes
-  final Set<String> _facultyTopics = {};
-  final Set<String> _facultyOutcomes = {};
-
-  // Meeting & Crisis
-  bool _metParent = false;
-  bool _crisisToday = false;
-  final Set<String> _crisisTypes = {};
-
-  // Time allocation
-  final Map<String, int> _timeAlloc = {};
 
   @override
   void initState() {

@@ -1,22 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:async';
-import 'dart:convert';
-import '../providers/bundles.dart';
-import '../widgets/bundle_grid.dart';
-import '../providers/categories.dart';
-import '../widgets/category_list_item.dart';
-import '../widgets/course_grid.dart';
-import '../providers/courses.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+// lib/screens/home_screen.dart
 import '../constants.dart';
-import 'bundle_list_screen.dart';
-import 'courses_screen.dart';
-import '../models/common_functions.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,79 +11,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  var _isInit = true;
-  var _isLoading = false;
-  var topCourses = [];
-  var bundles = [];
-  dynamic bundleStatus;
-
-  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
-  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-  final Connectivity _connectivity = Connectivity();
+  // Controlador del WebView, por si necesitas acciones (reload, etc.)
+  late final WebViewController _controller;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    addonStatus();
-    initConnectivity();
-
-    // onConnectivityChanged emite List<ConnectivityResult>
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      _updateConnectionStatus,
-    );
-  }
-
-  // 2) InitConnectivity sin casteos extraños:
-  Future<void> initConnectivity() async {
-    List<ConnectivityResult> results;
-    try {
-      // Ahora devuelve una lista
-      results = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      debugPrint('Error al comprobar conectividad: $e');
-      return;
-    }
-    if (!mounted) return;
-    _updateConnectionStatus(results);
-  }
-
-  // 3) La función maneja un único ConnectivityResult y es síncrona.
-  void _updateConnectionStatus(List<ConnectivityResult> results) {
-    setState(() {
-      _connectionStatus = results;
-    });
-  }
-
-  Future<void> addonStatus() async {
-    var url = '$BASE_URL/api/addon_status?unique_identifier=course_bundle';
-    final response = await http.get(Uri.parse(url));
-    bundleStatus = json.decode(response.body)['status'];
-  }
-
-  @override
-  void didChangeDependencies() {
-    if (_isInit) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Provider.of<Courses>(context).fetchTopCourses().then((_) {
-        setState(() {
-          _isLoading = false;
-          topCourses = Provider.of<Courses>(context, listen: false).topItems;
-        });
-      });
-      Provider.of<Courses>(
-        context,
-      ).filterCourses('all', 'all', 'all', 'all', 'all');
-      Provider.of<Bundles>(context).fetchBundle(true).then((_) {
-        setState(() {
-          bundles = Provider.of<Bundles>(context, listen: false).bundleItems;
-        });
-      });
-    }
-    _isInit = false;
-    super.didChangeDependencies();
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..loadRequest(
+            Uri.parse('https://www.nationalschoolchaplainassociation.org/blog'),
+          )
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (uri) => setState(() => _isLoading = true),
+              onPageFinished: (uri) => setState(() => _isLoading = false),
+              onNavigationRequest: (request) {
+                // Opcional: bloquear redirecciones fuera del dominio
+                if (!request.url.startsWith(
+                  'https://www.nationalschoolchaplainassociation.org',
+                )) {
+                  return NavigationDecision.prevent;
+                }
+                return NavigationDecision.navigate;
+              },
+            ),
+          );
   }
 
   Future<void> refreshList() async {
@@ -106,296 +46,39 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isLoading = true;
       });
-      await Provider.of<Courses>(context, listen: false).fetchTopCourses();
 
       setState(() {
         _isLoading = false;
-        topCourses = Provider.of<Courses>(context, listen: false).topItems;
       });
-    } catch (error) {
-      const errorMsg = 'Could not refresh!';
-      CommonFunctions.showErrorDialog(errorMsg, context);
-    }
+    } catch (error) {}
 
     return;
-  }
-
-  @override
-  void dispose() {
-    _connectivitySubscription.cancel();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: refreshList,
-      child: SingleChildScrollView(
-        child: FutureBuilder(
-          future:
-              Provider.of<Categories>(context, listen: false).fetchCategories(),
-          builder: (ctx, dataSnapshot) {
-            if (dataSnapshot.connectionState == ConnectionState.waiting) {
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * .5,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: kPrimaryColor.withOpacity(0.7),
-                  ),
-                ),
-              );
-            } else {
-              if (dataSnapshot.error != null) {
-                //error
-                return _connectionStatus == ConnectivityResult.none
-                    ? Center(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * .15,
-                          ),
-                          Image.asset(
-                            "assets/images/no_connection.png",
-                            height: MediaQuery.of(context).size.height * .35,
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text('There is no Internet connection'),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text(
-                              'Please check your Internet connection',
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    : const Center(
-                      child: Text('Error Occured'),
-                      // child: Text(dataSnapshot.error.toString()),
-                    );
-              } else {
-                return Column(
-                  children: [
-                    if (topCourses.isNotEmpty)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 20,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            const Text(
-                              'Top Course',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18,
-                              ),
-                            ),
-                            MaterialButton(
-                              onPressed: () {
-                                Navigator.of(context).pushNamed(
-                                  CoursesScreen.routeName,
-                                  arguments: {
-                                    'category_id': null,
-                                    'seacrh_query': null,
-                                    'type': CoursesPageData.All,
-                                  },
-                                );
-                              },
-                              padding: const EdgeInsets.all(0),
-                              child: Row(
-                                children: [
-                                  const Text('All courses'),
-                                  Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: kPrimaryColor.withOpacity(0.7),
-                                    size: 18,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    _isLoading
-                        ? Center(
-                          child: CircularProgressIndicator(
-                            color: kPrimaryColor.withOpacity(0.7),
-                          ),
-                        )
-                        : topCourses.isNotEmpty
-                        ? Container(
-                          margin: const EdgeInsets.symmetric(vertical: 0.0),
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          height: 260.0,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (ctx, index) {
-                              return CourseGrid(
-                                id: topCourses[index].id,
-                                title: topCourses[index].title,
-                                thumbnail: topCourses[index].thumbnail,
-                                instructorName: topCourses[index].instructor,
-                                instructorImage:
-                                    topCourses[index].instructorImage,
-                                rating: topCourses[index].rating,
-                                price: topCourses[index].price,
-                              );
-                            },
-                            itemCount: topCourses.length,
-                          ),
-                        )
-                        : const SizedBox(height: 0),
-                    if (bundleStatus == true)
-                      Column(
-                        children: [
-                          if (bundles.isNotEmpty)
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 20,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  const Text(
-                                    'Bundles',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  MaterialButton(
-                                    onPressed: () {
-                                      Navigator.of(
-                                        context,
-                                      ).pushNamed(BundleListScreen.routeName);
-                                    },
-                                    padding: const EdgeInsets.all(0),
-                                    child: Row(
-                                      children: [
-                                        const Text('All bundles'),
-                                        Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          color: kPrimaryColor.withOpacity(0.7),
-                                          size: 18,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          bundles.isNotEmpty
-                              ? Container(
-                                margin: const EdgeInsets.symmetric(
-                                  vertical: 0.0,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                ),
-                                height: 240.0,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  itemBuilder: (ctx, index) {
-                                    return BundleGrid(
-                                      id: bundles[index].id,
-                                      title: bundles[index].title,
-                                      banner:
-                                          // ignore: prefer_interpolation_to_compose_strings
-                                          '$BASE_URL/uploads/course_bundle/banner/' +
-                                          bundles[index].banner,
-                                      averageRating:
-                                          bundles[index].averageRating,
-                                      numberOfRatings:
-                                          bundles[index].numberOfRatings,
-                                      price: bundles[index].price,
-                                    );
-                                  },
-                                  itemCount: bundles.length,
-                                ),
-                              )
-                              : const SizedBox(height: 0),
-                        ],
-                      ),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 20,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          const Text(
-                            'Course Categories',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
-                          ),
-                          MaterialButton(
-                            onPressed: () {
-                              Navigator.of(context).pushNamed(
-                                CoursesScreen.routeName,
-                                arguments: {
-                                  'category_id': null,
-                                  'seacrh_query': null,
-                                  'type': CoursesPageData.All,
-                                },
-                              );
-                            },
-                            padding: const EdgeInsets.all(0),
-                            child: Row(
-                              children: [
-                                const Text('All courses'),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: kPrimaryColor.withOpacity(0.7),
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Consumer<Categories>(
-                      builder:
-                          (context, myCourseData, child) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemBuilder: (ctx, index) {
-                                return CategoryListItem(
-                                  id: myCourseData.items[index].id,
-                                  title: myCourseData.items[index].title,
-                                  thumbnail:
-                                      myCourseData.items[index].thumbnail,
-                                  numberOfSubCategories:
-                                      myCourseData
-                                          .items[index]
-                                          .numberOfSubCategories,
-                                );
-                              },
-                              itemCount: myCourseData.items.length,
-                            ),
-                          ),
-                    ),
-                  ],
-                );
-              }
-            }
-          },
-        ),
+      child: Stack(
+        children: [
+          // El WebView ocupa todo el espacio
+          WebViewWidget(controller: _controller),
+          // Mientras carga, mostramos un indicador
+          if (_isLoading)
+            SizedBox(
+              height: MediaQuery.of(context).size.height * .5,
+              child: Center(
+                child: CircularProgressIndicator(color: kPrimaryColor),
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Si fuera necesario limpiar algo:
+    super.dispose();
   }
 }
