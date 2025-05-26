@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
 
+/// Widget para seleccionar la fecha del reporte diario
 class DateStep extends StatelessWidget {
   const DateStep({super.key});
 
@@ -11,7 +12,7 @@ class DateStep extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(vertical: 8),
-      title: const Text('Fecha del Reporte'),
+      title: const Text('Report Date'),
       subtitle: Text(
         '${prov.reportDate.year.toString().padLeft(4, '0')}-'
         '${prov.reportDate.month.toString().padLeft(2, '0')}-'
@@ -20,13 +21,13 @@ class DateStep extends StatelessWidget {
       trailing: IconButton(
         icon: const Icon(Icons.calendar_today),
         onPressed: () async {
-          final d = await showDatePicker(
+          final selected = await showDatePicker(
             context: context,
             initialDate: prov.reportDate,
             firstDate: DateTime(2020),
             lastDate: DateTime.now(),
           );
-          if (d != null) prov.setDate(d);
+          if (selected != null) prov.setDate(selected);
         },
       ),
     );
