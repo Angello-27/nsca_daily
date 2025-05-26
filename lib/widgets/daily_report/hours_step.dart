@@ -4,8 +4,41 @@ import '../../providers/daily_report.dart';
 import '../../constants.dart';
 
 /// Widget para seleccionar horas de trabajo y conteo de alumnos (máximo 50)
-class HoursStep extends StatelessWidget {
+class HoursStep extends StatefulWidget {
   const HoursStep({super.key});
+
+  @override
+  State<HoursStep> createState() => _HoursStepState();
+}
+
+class _HoursStepState extends State<HoursStep> {
+  late final TextEditingController _totalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _totalController = TextEditingController();
+    // Suscríbete a cambios del provider:
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prov = context.read<DailyReportProvider>();
+      prov.addListener(_updateTotal);
+      _updateTotal();
+    });
+  }
+
+  @override
+  void dispose() {
+    context.read<DailyReportProvider>().removeListener(_updateTotal);
+    _totalController.dispose();
+    super.dispose();
+  }
+
+  void _updateTotal() {
+    // Esto se llamará tras cada notifyListeners()
+    if (!mounted) return;
+    _totalController.text =
+        context.read<DailyReportProvider>().totalStudents.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +141,7 @@ class HoursStep extends StatelessWidget {
 
         // Total Students
         TextFormField(
-          initialValue: prov.totalStudents.toString(),
+          controller: _totalController,
           readOnly: true,
           decoration: InputDecoration(
             labelText: 'Total Students',

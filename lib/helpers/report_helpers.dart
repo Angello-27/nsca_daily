@@ -32,7 +32,7 @@ Map<String, String> getFacultyOrStaffGroups() {
 }
 
 /// Resultados (outcomes)
-Map<String, String> getOutcomes({bool excelView = false}) {
+Map<String, String> getOutcomes() {
   return {
     'outcome01': 'Prayer',
     'outcome02': 'Scripture references',

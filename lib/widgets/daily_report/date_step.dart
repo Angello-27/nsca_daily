@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nsca_daily/constants.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
 
@@ -20,6 +21,7 @@ class DateStep extends StatelessWidget {
       ),
       trailing: IconButton(
         icon: const Icon(Icons.calendar_today),
+        color: kPrimaryColor,
         onPressed: () async {
           final selected = await showDatePicker(
             context: context,
