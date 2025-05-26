@@ -341,7 +341,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     },
                                   ),
                                   const SizedBox(height: 15),
-                                  SizedBox(
+                                  /*SizedBox(
                                     width: double.infinity,
                                     child:
                                         _isLoading
@@ -384,7 +384,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                                 ),
                                               ),
                                             ),
-                                  ),
+                                  ),*/
                                 ],
                               ),
                             ),

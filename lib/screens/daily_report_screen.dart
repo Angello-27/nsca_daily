@@ -15,20 +15,30 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
 
   // Form keys for each step
   late final List<GlobalKey<FormState>> _stepKeys;
+  late final TextEditingController _totalController;
+
+  // Date
+  DateTime? _reportDate;
 
   // Student data
+  // Hours & students
   int? _workingHours;
-  int? _studentsTotal;
   int? _studentsMale;
   int? _studentsFemale;
-  int? _studentsAge;
-  final Map<String, int> _studentsEthnic = {};
+  int? _studentsTotal;
+  // Student ethnicity
+  String? _studentsAge;
+  final Map<String, int> _studentEthnic = {};
+  // Student topics & outcomes
   final Set<String> _studentTopics = {};
   final Set<String> _studentOutcomes = {};
 
   // Faculty data
+  // Faculty total, breakdown & ethnicity
   int? _facultyTotal;
+  final Map<String, int> _facultyGroups = {};
   final Map<String, int> _facultyEthnic = {};
+  // Faculty topics & outcomes
   final Set<String> _facultyTopics = {};
   final Set<String> _facultyOutcomes = {};
 
@@ -44,13 +54,32 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
   void initState() {
     super.initState();
     // Initialize one key per step
-    _stepKeys = List.generate(7, (_) => GlobalKey<FormState>());
+    _reportDate = DateTime.now();
+    _totalController = TextEditingController(text: '0');
+    _stepKeys = List.generate(11, (_) => GlobalKey<FormState>());
+  }
+
+  @override
+  void dispose() {
+    _totalController.dispose();
+    super.dispose();
+  }
+
+  void _pickDate() async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: _reportDate!,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+    if (d != null) setState(() => _reportDate = d);
   }
 
   void _onStepContinue() {
     if (_currentStep < _steps.length - 1) {
       // Validate only current step
-      if (_stepKeys[_currentStep].currentState!.validate()) {
+      final form = _stepKeys[_currentStep].currentState;
+      if (form == null || form.validate()) {
         setState(() => _currentStep += 1);
       }
     } else {
@@ -63,6 +92,14 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
 
   void _onStepCancel() {
     if (_currentStep > 0) setState(() => _currentStep -= 1);
+  }
+
+  void _updateTotals() {
+    final sum = (_studentsMale ?? 0) + (_studentsFemale ?? 0);
+    setState(() {
+      _studentsTotal = sum;
+      _totalController.text = '$sum';
+    });
   }
 
   InputDecoration _inputDecoration(String label) {
@@ -78,8 +115,27 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
     );
   }
 
-  Widget _buildStep1Hours() => Form(
+  // Step builders
+  Widget _buildStep0Date() => Form(
     key: _stepKeys[0],
+    child: Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: ListTile(
+        title: const Text('Report Date'),
+        subtitle: Text(
+          '${_reportDate!.year}-${_reportDate!.month.toString().padLeft(2, '0')}-${_reportDate!.day.toString().padLeft(2, '0')}',
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.calendar_today),
+          color: kPrimaryColor,
+          onPressed: _pickDate,
+        ),
+      ),
+    ),
+  );
+
+  Widget _buildStep1Hours() => Form(
+    key: _stepKeys[1],
     child: Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Column(
@@ -89,22 +145,11 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
             decoration: _inputDecoration('Working Hours'),
             items:
                 List.generate(12, (i) => i + 1)
-                    .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
+                    .map((h) => DropdownMenuItem(value: h, child: Text('$h')))
                     .toList(),
             value: _workingHours,
             onChanged: (v) => setState(() => _workingHours = v),
             validator: (v) => v == null ? 'Please select hours' : null,
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<int>(
-            decoration: _inputDecoration('Total Students'),
-            items:
-                List.generate(50, (i) => i + 1)
-                    .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
-                    .toList(),
-            value: _studentsTotal,
-            onChanged: (v) => setState(() => _studentsTotal = v),
-            validator: (v) => v == null ? 'Please select total' : null,
           ),
           const SizedBox(height: 16),
           Row(
@@ -113,7 +158,6 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                 child: DropdownButtonFormField<int?>(
                   decoration: _inputDecoration('Male'),
                   items: [
-                    // Opción vacía:
                     const DropdownMenuItem<int?>(
                       value: null,
                       child: Text('None'),
@@ -124,26 +168,17 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                     ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
                   ],
                   value: _studentsMale,
-                  onChanged: (v) => setState(() => _studentsMale = v),
-                  validator: (v) {
-                    final total = _studentsTotal;
-                    final female = _studentsFemale;
-                    // 1) Total obligatorio
-                    if (total == null) return 'Select total first';
-                    // 2) Caso “todos mujeres”: male puede ser null si female == total
-                    if (v == null && female == total) return null;
-                    // 3) Ambos no nulos: suma debe coincidir
-                    if (v != null && female != null) {
-                      return (v + female == total)
-                          ? null
-                          : 'Male + Female must equal total';
+                  onChanged: (v) {
+                    setState(() {
+                      _studentsMale = v;
+                      _updateTotals();
+                    });
+                  },
+                  validator: (_) {
+                    if (_studentsMale == null && _studentsFemale == null) {
+                      return 'Select male or female';
                     }
-                    // 4) Caso “todos hombres”: male == total
-                    if (v != null && female == null) {
-                      return (v == total) ? null : 'Sum must equal total';
-                    }
-                    // 5) Si llegamos aquí, falta info de ambos o suma incorrecta
-                    return 'Required or match total';
+                    return null;
                   },
                 ),
               ),
@@ -152,7 +187,6 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                 child: DropdownButtonFormField<int?>(
                   decoration: _inputDecoration('Female'),
                   items: [
-                    // Opción vacía:
                     const DropdownMenuItem<int?>(
                       value: null,
                       child: Text('None'),
@@ -163,43 +197,48 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                     ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
                   ],
                   value: _studentsFemale,
-                  onChanged: (v) => setState(() => _studentsFemale = v),
-                  validator: (v) {
-                    final total = _studentsTotal;
-                    final male = _studentsMale;
-                    if (total == null) return 'Select total first';
-                    if (v == null && male == total) return null;
-                    if (v != null && male != null) {
-                      return (v + male == total)
-                          ? null
-                          : 'Male + Female must equal total';
+                  onChanged: (v) {
+                    setState(() {
+                      _studentsFemale = v;
+                      _updateTotals();
+                    });
+                  },
+                  validator: (_) {
+                    if (_studentsMale == null && _studentsFemale == null) {
+                      return 'Select male or female';
                     }
-                    if (v != null && male == null) {
-                      return (v == total) ? null : 'Sum must equal total';
-                    }
-                    return 'Required or match total';
+                    return null;
                   },
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            readOnly: true,
+            controller: _totalController,
+            decoration: _inputDecoration('Total Students'),
           ),
         ],
       ),
     ),
   );
 
-  Widget _buildStep2Ethnicity() => Form(
-    key: _stepKeys[1],
+  Widget _buildStep2StudentEthnic() => Form(
+    key: _stepKeys[2],
     child: Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DropdownButtonFormField<int>(
+          DropdownButtonFormField<String>(
             decoration: _inputDecoration('Average Age'),
             items:
-                List.generate(16, (i) => i + 5)
-                    .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
+                getAgeGroups().entries
+                    .map(
+                      (e) =>
+                          DropdownMenuItem(value: e.key, child: Text(e.value)),
+                    )
                     .toList(),
             value: _studentsAge,
             onChanged: (v) => setState(() => _studentsAge = v),
@@ -217,19 +256,16 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                 decoration: _inputDecoration(e.value),
                 items: [
                   // Opción vacía:
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('None'),
-                  ),
+                  const DropdownMenuItem<int?>(value: 0, child: Text('None')),
                   ...List.generate(
                     50,
                     (i) => i + 1,
                   ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
                 ],
-                value: _studentsEthnic[e.key],
-                onChanged: (v) => setState(() => _studentsEthnic[e.key] = v!),
+                value: _studentEthnic[e.key],
+                onChanged: (v) => setState(() => _studentEthnic[e.key] = v!),
                 validator: (v) {
-                  final sum = _studentsEthnic.values.fold(0, (s, x) => s + x);
+                  final sum = _studentEthnic.values.fold(0, (s, x) => s + x);
                   return sum == (_studentsTotal ?? 0)
                       ? null
                       : 'Sum must equal total';
@@ -243,133 +279,138 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
     ),
   );
 
-  Widget _buildStep3Topics() => Form(
-    key: _stepKeys[2],
-    child: Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Discussion Topics',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Checkbox(
-                // Si todos los elementos están seleccionados:
-                value: _studentTopics.length == getDiscussionTopics().length,
-                onChanged: (all) {
-                  setState(() {
-                    if (all == true) {
-                      _studentTopics.clear();
-                      _studentTopics.addAll(getDiscussionTopics().keys);
-                    } else {
-                      _studentTopics.clear();
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-          ...getDiscussionTopics().entries.map(
-            (e) => CheckboxListTile(
-              title: Text(e.value),
-              value: _studentTopics.contains(e.key),
-              onChanged:
-                  (sel) => setState(
-                    () =>
-                        sel!
-                            ? _studentTopics.add(e.key)
-                            : _studentTopics.remove(e.key),
-                  ),
+  Widget _buildStep3StudentTopics() => Form(
+    key: _stepKeys[3],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Mark all topics',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
-          ),
-          // --- Invisible FormField que valida al menos 1 Topic ---
-          FormField<bool>(
-            initialValue: _studentTopics.isNotEmpty,
-            validator: (_) {
-              return _studentTopics.isEmpty
-                  ? 'Please select at least one topic'
-                  : null;
-            },
-            builder: (state) {
-              return state.hasError
-                  ? Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      state.errorText!,
-                      style: TextStyle(color: kRedColor),
-                    ),
-                  )
-                  : const SizedBox.shrink();
-            },
-          ),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Outcomes',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Checkbox(
-                // Si todos los elementos están seleccionados:
-                value: _studentOutcomes.length == getOutcomes().length,
-                onChanged: (all) {
-                  setState(() {
-                    if (all == true) {
-                      _studentOutcomes.clear();
-                      _studentOutcomes.addAll(getOutcomes().keys);
-                    } else {
-                      _studentOutcomes.clear();
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-          ...getOutcomes().entries.map(
-            (e) => CheckboxListTile(
-              title: Text(e.value),
-              value: _studentOutcomes.contains(e.key),
-              onChanged:
-                  (sel) => setState(
-                    () =>
-                        sel!
-                            ? _studentOutcomes.add(e.key)
-                            : _studentOutcomes.remove(e.key),
-                  ),
+            Checkbox(
+              // Si todos los elementos están seleccionados:
+              value: _studentTopics.length == getDiscussionTopics().length,
+              onChanged: (all) {
+                setState(() {
+                  if (all == true) {
+                    _studentTopics.clear();
+                    _studentTopics.addAll(getDiscussionTopics().keys);
+                  } else {
+                    _studentTopics.clear();
+                  }
+                });
+              },
             ),
+          ],
+        ),
+        ...getDiscussionTopics().entries.map(
+          (e) => CheckboxListTile(
+            title: Text(e.value),
+            value: _studentTopics.contains(e.key),
+            onChanged:
+                (sel) => setState(
+                  () =>
+                      sel!
+                          ? _studentTopics.add(e.key)
+                          : _studentTopics.remove(e.key),
+                ),
           ),
-          // --- Invisible FormField que valida al menos 1 Outcome ---
-          FormField<bool>(
-            initialValue: _studentOutcomes.isNotEmpty,
-            validator: (_) {
-              return _studentOutcomes.isEmpty
-                  ? 'Please select at least one outcome'
-                  : null;
-            },
-            builder: (state) {
-              return state.hasError
-                  ? Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      state.errorText!,
-                      style: TextStyle(color: kRedColor),
-                    ),
-                  )
-                  : const SizedBox.shrink();
-            },
-          ),
-        ],
-      ),
+        ),
+        // --- Invisible FormField que valida al menos 1 Topic ---
+        FormField<bool>(
+          initialValue: _studentTopics.isNotEmpty,
+          validator: (_) {
+            return _studentTopics.isEmpty
+                ? 'Please select at least one topic'
+                : null;
+          },
+          builder: (state) {
+            return state.hasError
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 8),
+                  child: Text(
+                    state.errorText!,
+                    style: TextStyle(color: kRedColor),
+                  ),
+                )
+                : const SizedBox.shrink();
+          },
+        ),
+      ],
     ),
   );
 
-  Widget _buildStep4Faculty() => Form(
-    key: _stepKeys[3],
+  Widget _buildStep4StudentOutcomes() => Form(
+    key: _stepKeys[4],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Mark all outcomes',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            Checkbox(
+              // Si todos los elementos están seleccionados:
+              value: _studentOutcomes.length == getOutcomes().length,
+              onChanged: (all) {
+                setState(() {
+                  if (all == true) {
+                    _studentOutcomes.clear();
+                    _studentOutcomes.addAll(getOutcomes().keys);
+                  } else {
+                    _studentOutcomes.clear();
+                  }
+                });
+              },
+            ),
+          ],
+        ),
+        ...getOutcomes().entries.map(
+          (e) => CheckboxListTile(
+            title: Text(e.value),
+            value: _studentOutcomes.contains(e.key),
+            onChanged:
+                (sel) => setState(
+                  () =>
+                      sel!
+                          ? _studentOutcomes.add(e.key)
+                          : _studentOutcomes.remove(e.key),
+                ),
+          ),
+        ),
+        // --- Invisible FormField que valida al menos 1 Outcome ---
+        FormField<bool>(
+          initialValue: _studentOutcomes.isNotEmpty,
+          validator: (_) {
+            return _studentOutcomes.isEmpty
+                ? 'Please select at least one outcome'
+                : null;
+          },
+          builder: (state) {
+            return state.hasError
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 8),
+                  child: Text(
+                    state.errorText!,
+                    style: TextStyle(color: kRedColor),
+                  ),
+                )
+                : const SizedBox.shrink();
+          },
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildStep5Faculty() => Form(
+    key: _stepKeys[5],
     child: Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Column(
@@ -386,16 +427,54 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
             validator: (v) => v == null ? 'Select total' : null,
           ),
           const SizedBox(height: 16),
+          const Text(
+            'Breakdown by Role:',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const Divider(),
           ...getFacultyOrStaffGroups().entries.expand<Widget>(
             (e) => [
               DropdownButtonFormField<int?>(
                 decoration: _inputDecoration(e.value),
                 items: [
                   // Opción vacía:
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('None'),
-                  ),
+                  const DropdownMenuItem<int?>(value: 0, child: Text('None')),
+                  ...List.generate(
+                    50,
+                    (i) => i + 1,
+                  ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
+                ],
+                value: _facultyGroups[e.key],
+                onChanged: (v) => setState(() => _facultyGroups[e.key] = v!),
+                validator: (v) {
+                  final sum = _facultyGroups.values.fold(0, (s, x) => s + x);
+                  return sum == (_facultyTotal ?? 0)
+                      ? null
+                      : 'Sum must equal total';
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _buildStep6FacultyEthnic() => Form(
+    key: _stepKeys[6],
+    child: Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...getEthnicGroups().entries.expand<Widget>(
+            (e) => [
+              DropdownButtonFormField<int?>(
+                decoration: _inputDecoration(e.value),
+                items: [
+                  // Opción vacía:
+                  const DropdownMenuItem<int?>(value: 0, child: Text('None')),
                   ...List.generate(
                     50,
                     (i) => i + 1,
@@ -418,133 +497,138 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
     ),
   );
 
-  Widget _buildStep5FacultyTopics() => Form(
-    key: _stepKeys[4],
-    child: Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Discussion Topics',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Checkbox(
-                // Si todos los elementos están seleccionados:
-                value: _facultyTopics.length == getDiscussionTopics().length,
-                onChanged: (all) {
-                  setState(() {
-                    if (all == true) {
-                      _facultyTopics.clear();
-                      _facultyTopics.addAll(getDiscussionTopics().keys);
-                    } else {
-                      _facultyTopics.clear();
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-          ...getDiscussionTopics(forTeacher: true).entries.map(
-            (e) => CheckboxListTile(
-              title: Text(e.value),
-              value: _facultyTopics.contains(e.key),
-              onChanged:
-                  (sel) => setState(
-                    () =>
-                        sel!
-                            ? _facultyTopics.add(e.key)
-                            : _facultyTopics.remove(e.key),
-                  ),
+  Widget _buildStep7FacultyTopics() => Form(
+    key: _stepKeys[7],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Mark all topics',
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
-          ),
-          // --- Invisible FormField que valida al menos 1 Topic ---
-          FormField<bool>(
-            initialValue: _facultyTopics.isNotEmpty,
-            validator: (_) {
-              return _facultyTopics.isEmpty
-                  ? 'Please select at least one topic'
-                  : null;
-            },
-            builder: (state) {
-              return state.hasError
-                  ? Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      state.errorText!,
-                      style: TextStyle(color: kRedColor),
-                    ),
-                  )
-                  : const SizedBox.shrink();
-            },
-          ),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Faculty Outcomes',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Checkbox(
-                // Si todos los elementos están seleccionados:
-                value: _facultyOutcomes.length == getOutcomes().length,
-                onChanged: (all) {
-                  setState(() {
-                    if (all == true) {
-                      _facultyOutcomes.clear();
-                      _facultyOutcomes.addAll(getOutcomes().keys);
-                    } else {
-                      _facultyOutcomes.clear();
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-          ...getOutcomes().entries.map(
-            (e) => CheckboxListTile(
-              title: Text(e.value),
-              value: _facultyOutcomes.contains(e.key),
-              onChanged:
-                  (sel) => setState(
-                    () =>
-                        sel!
-                            ? _facultyOutcomes.add(e.key)
-                            : _facultyOutcomes.remove(e.key),
-                  ),
+            Checkbox(
+              // Si todos los elementos están seleccionados:
+              value: _facultyTopics.length == getDiscussionTopics().length,
+              onChanged: (all) {
+                setState(() {
+                  if (all == true) {
+                    _facultyTopics.clear();
+                    _facultyTopics.addAll(getDiscussionTopics().keys);
+                  } else {
+                    _facultyTopics.clear();
+                  }
+                });
+              },
             ),
+          ],
+        ),
+        ...getDiscussionTopics(forTeacher: true).entries.map(
+          (e) => CheckboxListTile(
+            title: Text(e.value),
+            value: _facultyTopics.contains(e.key),
+            onChanged:
+                (sel) => setState(
+                  () =>
+                      sel!
+                          ? _facultyTopics.add(e.key)
+                          : _facultyTopics.remove(e.key),
+                ),
           ),
-          // --- Invisible FormField que valida al menos 1 Outcome ---
-          FormField<bool>(
-            initialValue: _facultyOutcomes.isNotEmpty,
-            validator: (_) {
-              return _facultyOutcomes.isEmpty
-                  ? 'Please select at least one outcome'
-                  : null;
-            },
-            builder: (state) {
-              return state.hasError
-                  ? Padding(
-                    padding: const EdgeInsets.only(left: 16, bottom: 8),
-                    child: Text(
-                      state.errorText!,
-                      style: TextStyle(color: kRedColor),
-                    ),
-                  )
-                  : const SizedBox.shrink();
-            },
-          ),
-        ],
-      ),
+        ),
+        // --- Invisible FormField que valida al menos 1 Topic ---
+        FormField<bool>(
+          initialValue: _facultyTopics.isNotEmpty,
+          validator: (_) {
+            return _facultyTopics.isEmpty
+                ? 'Please select at least one topic'
+                : null;
+          },
+          builder: (state) {
+            return state.hasError
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 8),
+                  child: Text(
+                    state.errorText!,
+                    style: TextStyle(color: kRedColor),
+                  ),
+                )
+                : const SizedBox.shrink();
+          },
+        ),
+      ],
     ),
   );
 
-  Widget _buildStep6MeetingCrisis() => Form(
-    key: _stepKeys[5],
+  Widget _buildStep8FacultyOutcomes() => Form(
+    key: _stepKeys[8],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Mark all outcomes',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            Checkbox(
+              // Si todos los elementos están seleccionados:
+              value: _facultyOutcomes.length == getOutcomes().length,
+              onChanged: (all) {
+                setState(() {
+                  if (all == true) {
+                    _facultyOutcomes.clear();
+                    _facultyOutcomes.addAll(getOutcomes().keys);
+                  } else {
+                    _facultyOutcomes.clear();
+                  }
+                });
+              },
+            ),
+          ],
+        ),
+        ...getOutcomes().entries.map(
+          (e) => CheckboxListTile(
+            title: Text(e.value),
+            value: _facultyOutcomes.contains(e.key),
+            onChanged:
+                (sel) => setState(
+                  () =>
+                      sel!
+                          ? _facultyOutcomes.add(e.key)
+                          : _facultyOutcomes.remove(e.key),
+                ),
+          ),
+        ),
+        // --- Invisible FormField que valida al menos 1 Outcome ---
+        FormField<bool>(
+          initialValue: _facultyOutcomes.isNotEmpty,
+          validator: (_) {
+            return _facultyOutcomes.isEmpty
+                ? 'Please select at least one outcome'
+                : null;
+          },
+          builder: (state) {
+            return state.hasError
+                ? Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 8),
+                  child: Text(
+                    state.errorText!,
+                    style: TextStyle(color: kRedColor),
+                  ),
+                )
+                : const SizedBox.shrink();
+          },
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildStep9MeetingCrisis() => Form(
+    key: _stepKeys[9],
     child: Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Column(
@@ -629,8 +713,8 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
     ),
   );
 
-  Widget _buildStep7TimeAllocation() => Form(
-    key: _stepKeys[6],
+  Widget _buildStep10TimeAllocation() => Form(
+    key: _stepKeys[10],
     child: Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: Column(
@@ -665,46 +749,69 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
 
   List<Step> get _steps => [
     Step(
-      title: const Text('Hours & Students'),
-      content: _buildStep1Hours(),
+      title: const Text('Date'),
+      content: _buildStep0Date(),
       isActive: _currentStep >= 0,
-      state: _currentStep > 0 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Student Demographics'),
-      content: _buildStep2Ethnicity(),
+      title: const Text('Hours & Students'),
+      content: _buildStep1Hours(),
       isActive: _currentStep >= 1,
       state: _currentStep > 1 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Topics & Outcomes'),
-      content: _buildStep3Topics(),
+      title: const Text('Student Ethnicity'),
+      content: _buildStep2StudentEthnic(),
       isActive: _currentStep >= 2,
       state: _currentStep > 2 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Faculty Demographics'),
-      content: _buildStep4Faculty(),
+      title: const Text('Student Topics'),
+      content: _buildStep3StudentTopics(),
       isActive: _currentStep >= 3,
       state: _currentStep > 3 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Faculty Discussion/Outcomes'),
-      content: _buildStep5FacultyTopics(),
+      title: const Text('Student Outcomes'),
+      content: _buildStep4StudentOutcomes(),
       isActive: _currentStep >= 4,
       state: _currentStep > 4 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Meeting & Crisis'),
-      content: _buildStep6MeetingCrisis(),
+      title: const Text('Faculty Demographics'),
+      content: _buildStep5Faculty(),
       isActive: _currentStep >= 5,
       state: _currentStep > 5 ? StepState.complete : StepState.indexed,
     ),
     Step(
-      title: const Text('Time Allocation'),
-      content: _buildStep7TimeAllocation(),
+      title: const Text('Faculty Ethnicity'),
+      content: _buildStep6FacultyEthnic(),
       isActive: _currentStep >= 6,
       state: _currentStep > 6 ? StepState.complete : StepState.indexed,
+    ),
+    Step(
+      title: const Text('Faculty Topics'),
+      content: _buildStep7FacultyTopics(),
+      isActive: _currentStep >= 7,
+      state: _currentStep > 7 ? StepState.complete : StepState.indexed,
+    ),
+    Step(
+      title: const Text('Faculty Outcomes'),
+      content: _buildStep8FacultyOutcomes(),
+      isActive: _currentStep >= 8,
+      state: _currentStep > 8 ? StepState.complete : StepState.indexed,
+    ),
+    Step(
+      title: const Text('Meeting & Crisis'),
+      content: _buildStep9MeetingCrisis(),
+      isActive: _currentStep >= 9,
+      state: _currentStep > 9 ? StepState.complete : StepState.indexed,
+    ),
+    Step(
+      title: const Text('Time Allocation'),
+      content: _buildStep10TimeAllocation(),
+      isActive: _currentStep >= 10,
+      state: _currentStep > 10 ? StepState.complete : StepState.indexed,
     ),
   ];
 

@@ -1,5 +1,14 @@
 // lib/helpers/report_helpers.dart
 
+/// Grupo de nivel de educacion de estudiantes
+Map<String, String> getAgeGroups() {
+  return {
+    'elementary': 'Elementary',
+    'intermediate': 'Intermediate',
+    'high_school': 'High School',
+  };
+}
+
 /// Grupo étnico de estudiantes
 Map<String, String> getEthnicGroups() {
   return {
@@ -75,7 +84,7 @@ Map<String, String> getDiscussionTopics({bool forTeacher = false}) {
 /// Porcentajes en temas
 Map<String, String> getPercentageOnTopics() {
   return {
-    'topics01': 'Social, emotional mental support',
+    'topics01': 'Social, emotional and mental motivation.',
     'topics02': 'Spiritual support (prayer and scripture references)',
     'topics03': 'Role modelling and mentoring',
     'topics04': 'Educational support',
@@ -95,27 +104,5 @@ Map<String, String> getCrisisTypes() {
     'crisis05': 'Community Crises',
     'crisis06': 'Mental or Physical Health Threats',
     'crisis07': 'Student Abuse',
-  };
-}
-
-/// Opciones de calificación (rating)
-Map<String, String> getRatingOptions() {
-  return {
-    'highly_dissatisfied': 'Highly Dissatisfied',
-    'dissatisfied': 'Dissatisfied',
-    'neither': 'Neither Dissatisfied or Satisfied',
-    'satisfied': 'Satisfied',
-    'highly_satisfied': 'Highly Satisfied',
-  };
-}
-
-/// Opciones de recomendación (Net Promoter Score)
-Map<String, String> getRecommendationOptions() {
-  return {
-    'not_at_all_likely': 'Not At All Likely',
-    'not_very_likely': 'Not Very Likely',
-    'somewhat_likely': 'Somewhat Likely',
-    'likely': 'Likely',
-    'highly_likely': 'Highly Likely',
   };
 }

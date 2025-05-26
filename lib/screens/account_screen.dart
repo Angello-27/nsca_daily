@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import '../providers/auth.dart';
-import '../screens/account_remove_screen.dart';
+// import '../screens/account_remove_screen.dart';
 import '../widgets/account_list_tile.dart';
 import '../widgets/custom_text.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -243,7 +243,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               elevation: 0.1,
                               child: GestureDetector(
                                 child: const AccountListTile(
-                                  titleText: 'Edit Profile',
+                                  titleText: 'View Profile',
                                   icon: Icons.account_circle,
                                   actionType: 'edit',
                                 ),
@@ -304,7 +304,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(
+                        /*SizedBox(
                           height: 65,
                           child: Padding(
                             padding: const EdgeInsets.only(left: 10, right: 10),
@@ -327,7 +327,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               ),
                             ),
                           ),
-                        ),
+                        ),*/
                         SizedBox(
                           height: 65,
                           child: Padding(
