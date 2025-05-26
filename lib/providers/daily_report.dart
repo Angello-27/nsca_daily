@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
 import 'shared_pref_helper.dart';
+import '../models/daily_report.dart';
 
 class DailyReportProvider with ChangeNotifier {
-  // 1) Estado de formulario
+  // Estado del formulario
   DateTime reportDate = DateTime.now();
   int? workingHours;
 
@@ -21,8 +22,8 @@ class DailyReportProvider with ChangeNotifier {
   final Set<String> studentOutcomes = {};
 
   int? facultyTotal;
-  final Map<String, int> teacherReport = {}; // 'teachers'
-  final Map<String, int> facultyStaff = {}; // 'faculty'
+  final Map<String, int> teacherReport = {};
+  final Map<String, int> facultyStaff = {};
 
   final Map<String, int> ethnicTeachers = {};
 
@@ -35,9 +36,12 @@ class DailyReportProvider with ChangeNotifier {
 
   final Map<String, int> percentageByTopic = {};
 
-  int created = 1; // enviar siempre 1 para crear
+  int created = 1; // siempre 1 para crear
 
-  // 2) Métodos para actualizar estado
+  // en lib/providers/daily_report.dart
+  int get totalStudents => (studentsMale ?? 0) + (studentsFemale ?? 0);
+
+  // Métodos para actualizar estado (setters / toggles)...
   void setDate(DateTime d) {
     reportDate = d;
     notifyListeners();
@@ -129,49 +133,49 @@ class DailyReportProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 3) Construye el payload que espera tu API
-  Map<String, dynamic> _buildPayload() {
-    return {
-      'auth_token': '', // lo pondremos en submit()
-      'created': created,
-      'report_date': reportDate.toIso8601String().split('T').first,
-      'working': workingHours ?? 0,
-      'students': {'male': studentsMale ?? 0, 'female': studentsFemale ?? 0},
-      'teachers': teacherReport,
-      'faculty': facultyStaff,
-      'ethnic': {'student': ethnicStudents, 'teacher': ethnicTeachers},
-      'topics': {
-        'student': studentTopics.toList(),
-        'teacher': facultyTopics.toList(),
-      },
-      'outcomes': {
-        'student': studentOutcomes.toList(),
-        'teacher': facultyOutcomes.toList(),
-      },
-      'parent_meeting': metParent ? 1 : 0,
-      'crisis_today': crisisToday ? 1 : 0,
-      'crisis_types': crisisTypes.toList(),
-      'percentage': percentageByTopic,
-    };
-  }
-
-  /// 4) Llama a la API para crear o actualizar el reporte
+  /// Envía el reporte usando el modelo DailyReport
   Future<void> submitReport() async {
     final token = await SharedPreferenceHelper().getAuthToken();
     if (token == null || token.isEmpty) {
-      throw Exception('No auth token');
+      throw Exception('No auth token disponible');
     }
+
     final url = Uri.parse('$BASE_URL/api/daily_report');
-    final payload = _buildPayload()..['auth_token'] = token;
+
+    // Construye la instancia del modelo
+    final report = DailyReport(
+      reportDate: reportDate,
+      workingHours: workingHours ?? 0,
+      studentsMale: studentsMale ?? 0,
+      studentsFemale: studentsFemale ?? 0,
+      averageAge: averageAge,
+      ethnicStudents: ethnicStudents,
+      studentTopics: studentTopics.toList(),
+      studentOutcomes: studentOutcomes.toList(),
+      facultyTotal: facultyTotal ?? 0,
+      teacherReport: teacherReport,
+      facultyStaff: facultyStaff,
+      ethnicTeachers: ethnicTeachers,
+      facultyTopics: facultyTopics.toList(),
+      facultyOutcomes: facultyOutcomes.toList(),
+      metParent: metParent,
+      crisisToday: crisisToday,
+      crisisTypes: crisisTypes.toList(),
+      percentageByTopic: percentageByTopic,
+      created: created,
+    );
+
+    // Serializa a JSON y añade el token
+    final payload = report.toJson()..['auth_token'] = token;
 
     final response = await http.post(url, body: payload);
     final data = json.decode(response.body);
+
     if (data['status'] != 'success') {
-      throw Exception(data['error_reason'] ?? 'Unknown error');
+      throw Exception(data['error_reason'] ?? 'Error desconocido');
     }
-    // si quieres guardar el report_id:
+
     final int reportId = data['report_id'];
-    debugPrint('El nuevo Reporte Diario: $reportId');
-    // … quizás navigate o mostrar mensaje …
+    debugPrint('Reporte diario creado con ID: $reportId');
   }
 }
