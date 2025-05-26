@@ -20,7 +20,7 @@ class FacultyDemographicsStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Total de personal académico
-        DropdownButtonFormField<int>(
+        DropdownButtonFormField<int?>(
           decoration: InputDecoration(
             labelText: 'Total Faculty/Staff',
             border: kDefaultInputBorder,
@@ -28,11 +28,17 @@ class FacultyDemographicsStep extends StatelessWidget {
             filled: true,
             fillColor: Colors.white70,
           ),
+          // value puede ser null hasta que el usuario elija
           value: prov.teachersMany,
-          items:
-              List.generate(50, (i) => i + 1)
-                  .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
-                  .toList(),
+          items: [
+            // opción inicial vacía
+            const DropdownMenuItem<int?>(value: null, child: Text('None')),
+            // de 1 a total
+            ...List.generate(
+              50,
+              (i) => i + 1,
+            ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
+          ],
           onChanged: (v) {
             if (v != null) prov.setTeachersMany(v);
           },

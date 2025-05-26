@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:nsca_daily/helpers/report_helpers.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
 import '../../constants.dart';
 
 /// Widget para seleccionar horas de trabajo y conteo de alumnos (máximo 50)
-class HoursStep extends StatefulWidget {
-  const HoursStep({super.key});
+class StudentDemographicsStep extends StatefulWidget {
+  const StudentDemographicsStep({super.key});
 
   @override
-  State<HoursStep> createState() => _HoursStepState();
+  State<StudentDemographicsStep> createState() =>
+      _StudentDemographicsStepState();
 }
 
-class _HoursStepState extends State<HoursStep> {
+class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
   late final TextEditingController _totalController;
+  late final DailyReportProvider _prov;
 
   @override
   void initState() {
     super.initState();
     _totalController = TextEditingController();
-    // Suscríbete a cambios del provider:
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final prov = context.read<DailyReportProvider>();
-      prov.addListener(_updateTotal);
-      _updateTotal();
-    });
+    // Capturamos el provider y suscribimos listener
+    _prov = context.read<DailyReportProvider>();
+    _prov.addListener(_updateTotal);
+    _updateTotal();
   }
 
   @override
   void dispose() {
-    context.read<DailyReportProvider>().removeListener(_updateTotal);
+    // Usamos la referencia guardada, no context.read()
+    _prov.removeListener(_updateTotal);
     _totalController.dispose();
     super.dispose();
   }
 
   void _updateTotal() {
-    // Esto se llamará tras cada notifyListeners()
     if (!mounted) return;
-    _totalController.text =
-        context.read<DailyReportProvider>().studentsMany.toString();
+    _totalController.text = (_prov.studentsMany).toString();
   }
 
   @override
@@ -60,28 +60,6 @@ class _HoursStepState extends State<HoursStep> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),
-
-        // Working hours
-        DropdownButtonFormField<int>(
-          decoration: InputDecoration(
-            labelText: 'Working Hours',
-            border: kDefaultInputBorder,
-            focusedBorder: kDefaultFocusInputBorder,
-            filled: true,
-            fillColor: Colors.white70,
-          ),
-          value: prov.workingHours,
-          items:
-              List.generate(12, (i) => i + 1)
-                  .map((h) => DropdownMenuItem(value: h, child: Text('$h')))
-                  .toList(),
-          onChanged: (v) {
-            if (v != null) prov.setWorkingHours(v);
-          },
-          validator: (v) => v == null ? 'Please select hours' : null,
-        ),
-
-        const SizedBox(height: 16),
 
         // Male Students
         DropdownButtonFormField<int?>(
@@ -150,6 +128,27 @@ class _HoursStepState extends State<HoursStep> {
             filled: true,
             fillColor: Colors.white70,
           ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Average Age dropdown
+        DropdownButtonFormField<String?>(
+          decoration: InputDecoration(
+            labelText: 'Average Age',
+            border: kDefaultInputBorder,
+            focusedBorder: kDefaultFocusInputBorder,
+            filled: true,
+            fillColor: Colors.white70,
+          ),
+          items:
+              getAgeGroups().entries
+                  .map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  )
+                  .toList(),
+          value: prov.averageAge,
+          onChanged: prov.setAverageAge,
         ),
       ],
     );

@@ -13,7 +13,7 @@ class StudentEthnicStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<DailyReportProvider>();
-    final total = prov.studentsMany ?? 0; // ahora es int no nullable
+    final total = prov.studentsMany; // ahora es int no nullable
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

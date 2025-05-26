@@ -57,23 +57,28 @@ class DailyReport {
        percentageByTopic = percentageByTopic ?? {};
 
   factory DailyReport.fromJson(Map<String, dynamic> json) {
+    // helper para int
+    int parseInt(dynamic v) => v == null ? 0 : int.tryParse(v.toString()) ?? 0;
+    // helper para string
+    String? parseString(dynamic v) => v?.toString();
+
+    final students = json['students'] as Map<String, dynamic>? ?? {};
+    final teachers = json['teachers'] as Map<String, dynamic>? ?? {};
+
     return DailyReport(
       reportDate: DateTime.parse(json['report_date'] as String),
-      workingHours: json['working'] as int,
+      workingHours: parseInt(json['working']),
 
-      // aquí mapeamos students[...] → propiedades
-      studentsMany: json['students']['many'] as int,
-      studentsMale: json['students']['male'] as int,
-      studentsFemale: json['students']['female'] as int,
-      averageAge: json['students']['ages'] as String?,
+      studentsMany: parseInt(students['many']),
+      studentsMale: parseInt(students['male']),
+      studentsFemale: parseInt(students['female']),
+      averageAge: parseString(students['ages']),
 
       ethnicStudents: Map<String, int>.from(json['ethnic']['student'] ?? {}),
       studentTopics: List<String>.from(json['topics']['student'] ?? []),
       studentOutcomes: List<String>.from(json['outcomes']['student'] ?? []),
 
-      // aquí mapeamos teachers[...] → propiedades
-      teachersMany: json['teachers']['many'] as int,
-
+      teachersMany: parseInt(teachers['many']),
       facultyStaff: Map<String, int>.from(json['faculty'] ?? {}),
       ethnicTeachers: Map<String, int>.from(json['ethnic']['teacher'] ?? {}),
       facultyTopics: List<String>.from(json['topics']['teacher'] ?? []),
@@ -93,25 +98,23 @@ class DailyReport {
       'created': created,
       'report_date': reportDate.toIso8601String().split('T').first,
       'working': workingHours,
-
-      // así enviará exactamente lo que espera tu API PHP:
       'students': {
         'many': studentsMany,
         'male': studentsMale,
         'female': studentsFemale,
         'ages': averageAge,
       },
+      'teachers': {
+        'many': teachersMany,
+        // si en el futuro añades desglose extra, lo puedes incorporar aquí
+      },
+      'faculty': facultyStaff,
       'ethnic': {'student': ethnicStudents, 'teacher': ethnicTeachers},
       'topics': {'student': studentTopics, 'teacher': facultyTopics},
       'outcomes': {'student': studentOutcomes, 'teacher': facultyOutcomes},
-
-      'teachers': {'many': teachersMany},
-      'faculty': facultyStaff,
-
       'parent_meeting': metParent ? 1 : 0,
       'crisis_today': crisisToday ? 1 : 0,
       'crisis_types': crisisTypes,
-
       'percentage': percentageByTopic,
     };
   }

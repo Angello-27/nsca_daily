@@ -139,7 +139,7 @@ class DailyReportProvider with ChangeNotifier {
   }
 
   /// Envía el reporte usando el modelo DailyReport
-  Future<void> submitReport() async {
+  Future<String?> submitReport() async {
     final token = await SharedPreferenceHelper().getAuthToken();
     if (token == null || token.isEmpty) {
       throw Exception('No auth token disponible');
@@ -172,15 +172,53 @@ class DailyReportProvider with ChangeNotifier {
 
     // Serializa a JSON y añade el token
     final payload = report.toJson()..['auth_token'] = token;
+    debugPrint('▶️ Sending payload: $payload');
 
-    final response = await http.post(url, body: payload);
-    final data = json.decode(response.body);
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      );
+      debugPrint('◀️ Response (${response.statusCode}): ${response.body}');
+      final data = json.decode(response.body);
 
-    if (data['status'] != 'success') {
-      throw Exception(data['error_reason'] ?? 'Error desconocido');
+      if (data['status'] != 'success') {
+        throw Exception(data['error']);
+      }
+
+      final int reportId = data['report_id'];
+      debugPrint('Reporte diario creado con ID: $reportId');
+
+      return null;
+    } catch (error, stack) {
+      // Este print te dará la línea exacta donde muere el cast
+      debugPrint('❌ submitReport threw:\n$error\n$stack');
+      return error.toString();
     }
+  }
 
-    final int reportId = data['report_id'];
-    debugPrint('Reporte diario creado con ID: $reportId');
+  /// Resetea todos los valores al estado inicial
+  void reset() {
+    reportDate = DateTime.now();
+    workingHours = null;
+    studentsMany = 0;
+    studentsMale = null;
+    studentsFemale = null;
+    averageAge = null;
+    ethnicStudents.clear();
+    studentTopics.clear();
+    studentOutcomes.clear();
+    teachersMany = null;
+    facultyStaff.clear();
+    ethnicTeachers.clear();
+    facultyTopics.clear();
+    facultyOutcomes.clear();
+    metParent = false;
+    crisisToday = false;
+    crisisTypes.clear();
+    percentageByTopic.clear();
+    created = 1;
+    notifyListeners();
   }
 }

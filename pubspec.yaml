@@ -36,6 +36,7 @@ dependencies:
   share_plus: ^11.0.0
   youtube_player_flutter: ^9.1.1
   video_player: ^2.9.5
+  lottie: ^2.2.0
   
 
 dev_dependencies:

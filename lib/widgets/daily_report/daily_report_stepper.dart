@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nsca_daily/constants.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
 import './date_step.dart';
-import './hours_step.dart';
+import 'student_demographics_step.dart';
 import './student_ethnic_step.dart';
 import './student_topics_step.dart';
 import './student_outcomes_step.dart';
@@ -32,16 +33,27 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
     if (form == null || form.validate()) {
       if (isLast) {
         try {
-          await prov.submitReport();
-          if (!mounted) return; // evita usar context si ya no está montado
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Report submitted')));
-        } catch (e) {
+          final error = await prov.submitReport();
+          if (!mounted) return;
+          if (error != null) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error)));
+          } else {
+            // En lugar del SnackBar, mostramos el diálogo de éxito
+            await showSuccessDialog(context);
+            // 1) Reseteo el provider
+            prov.reset();
+            // 2) Pinto el stepper de nuevo en 0
+            setState(() {
+              _currentStep = 0;
+            });
+          }
+        } catch (error) {
           if (!mounted) return;
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text(e.toString())));
+          ).showSnackBar(SnackBar(content: Text(error.toString())));
         }
       } else {
         setState(() => _currentStep++);
@@ -60,8 +72,8 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
       isActive: _currentStep >= 0,
     ),
     Step(
-      title: const Text('Hours & Students'),
-      content: Form(key: _stepKeys[1], child: const HoursStep()),
+      title: const Text('Student Demographics'),
+      content: Form(key: _stepKeys[1], child: const StudentDemographicsStep()),
       isActive: _currentStep >= 1,
       state: _currentStep > 1 ? StepState.complete : StepState.indexed,
     ),
@@ -120,6 +132,39 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
       state: _currentStep > 10 ? StepState.complete : StepState.indexed,
     ),
   ];
+
+  Future<void> showSuccessDialog(BuildContext context) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Si tienes un JSON de Lottie en assets:
+                Lottie.asset(
+                  'assets/images/success.json',
+                  width: 120,
+                  repeat: false,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Your daily report was submitted successfully!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+    );
+  }
 
   Widget _buildNextButton(ControlsDetails details, bool isLast) {
     return MaterialButton(
