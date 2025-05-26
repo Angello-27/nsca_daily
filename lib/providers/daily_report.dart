@@ -12,54 +12,64 @@ class DailyReportProvider with ChangeNotifier {
   DateTime reportDate = DateTime.now();
   int? workingHours;
 
+  // Estudiantes
+  int studentsMany = 0;
   int? studentsMale;
   int? studentsFemale;
-
   String? averageAge;
   final Map<String, int> ethnicStudents = {};
-
   final Set<String> studentTopics = {};
   final Set<String> studentOutcomes = {};
 
-  int? facultyTotal;
-  final Map<String, int> teacherReport = {};
+  // Personal académico
+  int? teachersMany;
   final Map<String, int> facultyStaff = {};
-
   final Map<String, int> ethnicTeachers = {};
-
   final Set<String> facultyTopics = {};
   final Set<String> facultyOutcomes = {};
 
+  // Reunión y crisis
   bool metParent = false;
   bool crisisToday = false;
   final Set<String> crisisTypes = {};
 
+  // Tiempo asignado
   final Map<String, int> percentageByTopic = {};
 
   int created = 1; // siempre 1 para crear
 
-  // en lib/providers/daily_report.dart
-  int get totalStudents => (studentsMale ?? 0) + (studentsFemale ?? 0);
-
-  // Métodos para actualizar estado (setters / toggles)...
+  // Métodos para actualizar estado
   void setDate(DateTime d) {
     reportDate = d;
     notifyListeners();
   }
 
-  void setWorkingHours(int h) {
+  void setWorkingHours(int? h) {
     workingHours = h;
     notifyListeners();
   }
 
+  void setStudentsMany(int m) {
+    studentsMany = m;
+    notifyListeners();
+  }
+
+  // Estudiantes: al cambiar male/female recalcula studentsMany
   void setStudentsMale(int? m) {
     studentsMale = m;
+    _updateStudentsMany();
     notifyListeners();
   }
 
   void setStudentsFemale(int? f) {
     studentsFemale = f;
+    _updateStudentsMany();
     notifyListeners();
+  }
+
+  // studentsMany se calcula internamente
+  void _updateStudentsMany() {
+    studentsMany = (studentsMale ?? 0) + (studentsFemale ?? 0);
   }
 
   void setAverageAge(String? a) {
@@ -82,13 +92,8 @@ class DailyReportProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFacultyTotal(int t) {
-    facultyTotal = t;
-    notifyListeners();
-  }
-
-  void setTeacherReportMany(int t) {
-    teacherReport['many'] = t;
+  void setTeachersMany(int? t) {
+    teachersMany = t;
     notifyListeners();
   }
 
@@ -146,14 +151,14 @@ class DailyReportProvider with ChangeNotifier {
     final report = DailyReport(
       reportDate: reportDate,
       workingHours: workingHours ?? 0,
+      studentsMany: studentsMany,
       studentsMale: studentsMale ?? 0,
       studentsFemale: studentsFemale ?? 0,
       averageAge: averageAge,
       ethnicStudents: ethnicStudents,
       studentTopics: studentTopics.toList(),
       studentOutcomes: studentOutcomes.toList(),
-      facultyTotal: facultyTotal ?? 0,
-      teacherReport: teacherReport,
+      teachersMany: teachersMany ?? 0,
       facultyStaff: facultyStaff,
       ethnicTeachers: ethnicTeachers,
       facultyTopics: facultyTopics.toList(),

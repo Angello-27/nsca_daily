@@ -37,7 +37,7 @@ class _HoursStepState extends State<HoursStep> {
     // Esto se llamará tras cada notifyListeners()
     if (!mounted) return;
     _totalController.text =
-        context.read<DailyReportProvider>().totalStudents.toString();
+        context.read<DailyReportProvider>().studentsMany.toString();
   }
 
   @override

@@ -13,7 +13,7 @@ class FacultyEthnicStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<DailyReportProvider>();
-    final total = prov.facultyTotal ?? 0;
+    final total = prov.teachersMany ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

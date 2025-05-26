@@ -13,7 +13,7 @@ class FacultyDemographicsStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prov = context.watch<DailyReportProvider>();
-    final total = prov.facultyTotal ?? 0;
+    final total = prov.teachersMany ?? 0;
     final groups = getFacultyOrStaffGroups();
 
     return Column(
@@ -28,13 +28,13 @@ class FacultyDemographicsStep extends StatelessWidget {
             filled: true,
             fillColor: Colors.white70,
           ),
-          value: prov.facultyTotal,
+          value: prov.teachersMany,
           items:
               List.generate(50, (i) => i + 1)
                   .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
                   .toList(),
           onChanged: (v) {
-            if (v != null) prov.setFacultyTotal(v);
+            if (v != null) prov.setTeachersMany(v);
           },
           validator: (v) => v == null ? 'Please select total' : null,
         ),
