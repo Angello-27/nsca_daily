@@ -8,7 +8,7 @@ import 'account_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'daily_report_screen.dart';
-import 'my_courses_screen.dart';
+import 'chaplaincy_screen.dart';
 
 class TabsScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -69,7 +69,8 @@ class _TabsScreenState extends State<TabsScreen> {
       if (isAuth) {
         _pages = [
           const HomeScreen(),
-          const MyCoursesScreen(),
+          const ChaplaincyScreen(), // Pestaña de capellanía
+          // const MyCoursesScreen(), // Temporalmente oculto
           const DailyReportScreen(),
           const AccountScreen(),
         ];
@@ -109,34 +110,40 @@ class _TabsScreenState extends State<TabsScreen> {
                 child: const Icon(Icons.filter_list),
               )
               : null,*/
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: _selectPage,
-        items: const [
-          BottomNavigationBarItem(
-            backgroundColor: kBackgroundColor,
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            backgroundColor: kBackgroundColor,
-            icon: Icon(Icons.school_outlined),
-            activeIcon: Icon(Icons.school),
-            label: 'Curriculum',
-          ),
-          BottomNavigationBarItem(
-            backgroundColor: kBackgroundColor,
-            icon: Icon(Icons.aod_outlined),
-            activeIcon: Icon(Icons.aod_rounded),
-            label: 'Daily report',
-          ),
-          BottomNavigationBarItem(
-            backgroundColor: kBackgroundColor,
-            icon: Icon(Icons.account_circle_outlined),
-            activeIcon: Icon(Icons.account_circle),
-            label: 'Account',
-          ),
-        ],
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: _selectPage,
+          items: const [
+            BottomNavigationBarItem(
+              backgroundColor: kBackgroundColor,
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: kBackgroundColor,
+              icon: Icon(Icons.verified_user_outlined),
+              activeIcon: Icon(Icons.verified_user),
+              label: 'Chaplaincy',
+            ),
+            // BottomNavigationBarItem(
+            //   backgroundColor: kBackgroundColor,
+            //   icon: Icon(Icons.school_outlined),
+            //   activeIcon: Icon(Icons.school),
+            //   label: 'Curriculum',
+            // ),
+            BottomNavigationBarItem(
+              backgroundColor: kBackgroundColor,
+              icon: Icon(Icons.aod_outlined),
+              activeIcon: Icon(Icons.aod_rounded),
+              label: 'Daily report',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: kBackgroundColor,
+              icon: Icon(Icons.account_circle_outlined),
+              activeIcon: Icon(Icons.account_circle),
+              label: 'Account',
+            ),
+          ],
         backgroundColor: Colors.white,
         unselectedItemColor: kSecondaryColor,
         selectedItemColor: kSelectItemColor,

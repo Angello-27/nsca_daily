@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 const String BASE_URL = 'https://www.nscaacademy.org';
 //const String BASE_URL = 'http://192.168.0.9/nsca-lms/';
 
+// URL específica para el proceso de capellanía
+const String CHAPLAINCY_URL = 'http://localhost/nsca-lms/home/chaplaincy/1';
+
 // list of colors that we use in our app
 const kBackgroundColor = Color(0xFFF5F9FA);
 const kPrimaryColor = Color(0xFFFFC600);

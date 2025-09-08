@@ -32,6 +32,7 @@ import 'screens/auth_screen.dart';
 import 'screens/course_detail_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/tabs_screen.dart';
+import 'screens/chaplaincy_screen.dart';
 
 void main() {
   Logger.root.onRecord.listen((LogRecord rec) {
@@ -115,6 +116,8 @@ class MyApp extends StatelessWidget {
                     (ctx) => const MyBundleCoursesListScreen(),
                 DeviceVerificationScreen.routeName:
                     (context) => const DeviceVerificationScreen(),
+                ChaplaincyScreen.routeName:
+                    (ctx) => const ChaplaincyScreen(),
               },
             ),
       ),
