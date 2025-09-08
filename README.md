@@ -233,4 +233,26 @@ Para soporte técnico o consultas sobre la aplicación, contacta a:
 
 ---
 
-## Desarrollado con ❤️ para la National School Chaplain Association
+## 👥 Equipo de NSCA
+
+**National School Chaplain Association (NSCA)** fue establecida para promover a los capellanes escolares como miembros legítimos y necesarios del personal escolar a través de estándares nacionales para capellanes escolares.
+
+NSCA es un ministerio de capellanía cristiana que proporciona cuidado espiritual, consejería y apoyo comunitario práctico a estudiantes de Pre-K hasta 12º grado, maestros y sus familias, independientemente de edad, raza, credo, sexo, origen nacional, religión, orientación sexual, discapacidad, estado civil o estatus socioeconómico.
+
+Nuestros capellanes capacitados y certificados proporcionan consejo, educación, defensa, habilidades de mejora de vida y entrenamiento de recuperación, sirviendo como un puente entre los entornos seculares y espirituales de la vida comunitaria en todo Estados Unidos.
+
+### **Visión**
+
+Un capellán certificado en cada campus escolar.
+
+### **Misión**
+
+Proporcionar apoyo espiritual y emocional a maestros, estudiantes, personal y sus familias.
+
+### **Principios**
+
+Mostramos a Cristo en lo que decimos y hacemos. Encontramos a las personas donde están, sin importar las circunstancias, para mostrar compasión y amor tal como lo haría Jesús.
+
+---
+
+**Desarrollado con ❤️ por el equipo de NSCA
