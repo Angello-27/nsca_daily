@@ -46,7 +46,7 @@ class DateStep extends StatelessWidget {
             filled: true,
             fillColor: Colors.white70,
           ),
-          value: prov.workingHours,
+          initialValue: prov.workingHours,
           items:
               List.generate(12, (i) => i + 1)
                   .map((h) => DropdownMenuItem(value: h, child: Text('$h')))

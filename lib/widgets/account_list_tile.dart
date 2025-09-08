@@ -8,7 +8,7 @@ import '../constants.dart';
 import '../screens/account_remove_screen.dart';
 import './custom_text.dart';
 
-class AccountListTile extends StatelessWidget {
+class AccountListTile extends StatefulWidget {
   final String? titleText;
   final IconData? icon;
   final String? actionType;
@@ -22,30 +22,32 @@ class AccountListTile extends StatelessWidget {
     this.courseAccessibility,
   });
 
-  void _actionHandler(BuildContext context) {
-    if (actionType == 'logout') {
-      if (courseAccessibility == 'publicly') {
-        Provider.of<Auth>(context, listen: false).logout().then(
-          (_) =>
-              Navigator.pushNamedAndRemoveUntil(context, '/home', (r) => false),
-        );
-      } else {
-        Provider.of<Auth>(context, listen: false).logout().then(
-          (_) => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/auth-private',
-            (r) => false,
-          ),
-        );
+  @override
+  State<AccountListTile> createState() => _AccountListTileState();
+}
+
+class _AccountListTileState extends State<AccountListTile> {
+  late NavigatorState navigator;
+
+  void _actionHandler(BuildContext context) async {
+    navigator = Navigator.of(context);
+    if (widget.actionType == 'logout') {
+      await Provider.of<Auth>(context, listen: false).logout();
+      if (mounted) {
+        if (widget.courseAccessibility == 'publicly') {
+          navigator.pushNamedAndRemoveUntil('/home', (r) => false);
+        } else {
+          navigator.pushNamedAndRemoveUntil('/auth-private', (r) => false);
+        }
       }
-    } else if (actionType == 'edit') {
-      Navigator.of(context).pushNamed(EditProfileScreen.routeName);
-    } else if (actionType == 'change_password') {
-      Navigator.of(context).pushNamed(EditPasswordScreen.routeName);
-    } else if (actionType == 'account_delete') {
-      Navigator.of(context).pushNamed(AccountRemoveScreen.routeName);
+    } else if (widget.actionType == 'edit') {
+      navigator.pushNamed(EditProfileScreen.routeName);
+    } else if (widget.actionType == 'change_password') {
+      navigator.pushNamed(EditPasswordScreen.routeName);
+    } else if (widget.actionType == 'account_delete') {
+      navigator.pushNamed(AccountRemoveScreen.routeName);
     } else {
-      Navigator.of(context).pushNamed(DownloadedCourseList.routeName);
+      navigator.pushNamed(DownloadedCourseList.routeName);
     }
   }
 
@@ -57,11 +59,11 @@ class AccountListTile extends StatelessWidget {
         radius: 20,
         child: Padding(
           padding: const EdgeInsets.all(6),
-          child: FittedBox(child: Icon(icon, color: Colors.white)),
+          child: FittedBox(child: Icon(widget.icon, color: Colors.white)),
         ),
       ),
       title: CustomText(
-        text: titleText,
+        text: widget.titleText,
         colors: kTextColor,
         fontSize: 16,
         fontWeight: FontWeight.bold,

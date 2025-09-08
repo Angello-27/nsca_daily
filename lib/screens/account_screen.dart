@@ -193,14 +193,12 @@ class _AccountScreenState extends State<AccountScreen> {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.logout),
-                      onPressed: () {
-                        Provider.of<Auth>(context, listen: false).logout().then(
-                          (_) => Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            '/home',
-                            (r) => false,
-                          ),
-                        );
+                      onPressed: () async {
+                        final navigator = Navigator.of(context);
+                        await Provider.of<Auth>(context, listen: false).logout();
+                        if (mounted) {
+                          navigator.pushNamedAndRemoveUntil('/home', (r) => false);
+                        }
                       },
                     ),
                     const Center(child: Text('Error Occurred')),
@@ -344,29 +342,15 @@ class _AccountScreenState extends State<AccountScreen> {
                                   actionType: 'logout',
                                   courseAccessibility: courseAccessibility,
                                 ),
-                                onTap: () {
-                                  if (courseAccessibility == 'publicly') {
-                                    Provider.of<Auth>(
-                                      context,
-                                      listen: false,
-                                    ).logout().then(
-                                      (_) => Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/home',
-                                        (r) => false,
-                                      ),
-                                    );
-                                  } else {
-                                    Provider.of<Auth>(
-                                      context,
-                                      listen: false,
-                                    ).logout().then(
-                                      (_) => Navigator.pushNamedAndRemoveUntil(
-                                        context,
-                                        '/auth-private',
-                                        (r) => false,
-                                      ),
-                                    );
+                                onTap: () async {
+                                  final navigator = Navigator.of(context);
+                                  await Provider.of<Auth>(context, listen: false).logout();
+                                  if (mounted) {
+                                    if (courseAccessibility == 'publicly') {
+                                      navigator.pushNamedAndRemoveUntil('/home', (r) => false);
+                                    } else {
+                                      navigator.pushNamedAndRemoveUntil('/auth-private', (r) => false);
+                                    }
                                   }
                                 },
                               ),

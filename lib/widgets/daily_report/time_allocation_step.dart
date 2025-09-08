@@ -38,7 +38,7 @@ class TimeAllocationStep extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white70,
               ),
-              value: current,
+              initialValue: current,
               items: [
                 const DropdownMenuItem<int?>(value: null, child: Text('None')),
                 ...List.generate(

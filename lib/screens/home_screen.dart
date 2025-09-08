@@ -50,7 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isLoading = false;
       });
-    } catch (error) {}
+    } catch (error) {
+      // Error handling can be added here if needed
+    }
 
     return;
   }

@@ -51,7 +51,7 @@ class StudentEthnicStep extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white70,
               ),
-              value: current <= maxForThis ? current : 0,
+              initialValue: current <= maxForThis ? current : 0,
               items:
                   List.generate(maxForThis + 1, (i) => i)
                       .map((v) => DropdownMenuItem(value: v, child: Text('$v')))

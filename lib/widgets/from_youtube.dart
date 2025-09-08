@@ -74,8 +74,7 @@ class _PlayVideoFromVimeoIdState extends State<PlayVideoFromYoutube> {
             return;
           } else {
             var isCompleted = responseData['is_completed'];
-            if (isCompleted == 1) {
-              // ignore: use_build_context_synchronously
+            if (isCompleted == 1 && mounted) {
               Provider.of<MyCourses>(
                 context,
                 listen: false,

@@ -70,7 +70,7 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
             filled: true,
             fillColor: Colors.white70,
           ),
-          value: prov.studentsMale,
+          initialValue: prov.studentsMale,
           items: [
             const DropdownMenuItem<int?>(value: null, child: Text('None')),
             ...List.generate(
@@ -98,7 +98,7 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
             filled: true,
             fillColor: Colors.white70,
           ),
-          value: prov.studentsFemale,
+          initialValue: prov.studentsFemale,
           items: [
             const DropdownMenuItem<int?>(value: null, child: Text('None')),
             ...List.generate(
@@ -147,7 +147,7 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
                     (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
                   )
                   .toList(),
-          value: prov.averageAge,
+          initialValue: prov.averageAge,
           onChanged: prov.setAverageAge,
         ),
       ],

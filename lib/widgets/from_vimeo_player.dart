@@ -64,7 +64,7 @@ class _FromVimeoPlayerState extends State<FromVimeoPlayer> {
           if (responseData != null) {
             var isCompleted = responseData['is_completed'];
             debugPrint("Arif output here ::: $isCompleted");
-            if (isCompleted == 1) {
+            if (isCompleted == 1 && mounted) {
               Provider.of<MyCourses>(
                 context,
                 listen: false,

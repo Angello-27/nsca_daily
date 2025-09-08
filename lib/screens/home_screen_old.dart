@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
             } else {
               if (dataSnapshot.error != null) {
                 //error
-                return _connectionStatus == ConnectivityResult.none
+                return _connectionStatus.contains(ConnectivityResult.none)
                     ? Center(
                       child: Column(
                         children: [

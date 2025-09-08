@@ -28,8 +28,7 @@ class FacultyDemographicsStep extends StatelessWidget {
             filled: true,
             fillColor: Colors.white70,
           ),
-          // value puede ser null hasta que el usuario elija
-          value: prov.teachersMany,
+          initialValue: prov.teachersMany,
           items: [
             // opción inicial vacía
             const DropdownMenuItem<int?>(value: null, child: Text('None')),
@@ -76,7 +75,7 @@ class FacultyDemographicsStep extends StatelessWidget {
                 filled: true,
                 fillColor: Colors.white70,
               ),
-              value: current <= maxForThis ? current : 0,
+              initialValue: current <= maxForThis ? current : 0,
               items:
                   List.generate(maxForThis + 1, (i) => i)
                       .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
