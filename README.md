@@ -6,9 +6,16 @@ Una aplicación móvil Flutter para la **National School Chaplain Association (N
 
 NSCA Daily es una aplicación educativa que permite a los capellanes escolares acceder a cursos especializados, reportes diarios, y recursos de formación continua. La aplicación integra un sistema de gestión de aprendizaje (LMS) con funcionalidades específicas para el trabajo pastoral en entornos educativos.
 
+## 🔗 Enlaces del Proyecto
+
+- **Repositorio**: [https://github.com/Angello-27/nsca_daily.git](https://github.com/Angello-27/nsca_daily.git)
+- **Plataforma Web**: [https://www.nscaacademy.org/](https://www.nscaacademy.org/)
+- **Organización**: [National School Chaplain Association](https://www.nationalschoolchaplainassociation.org/)
+
 ## ✨ Características Principales
 
 ### 🎓 **Sistema de Cursos**
+
 - **Catálogo de cursos** especializados en capellanía escolar
 - **Bundles de cursos** agrupados por temáticas
 - **Cursos gratuitos y de pago** con diferentes niveles
@@ -17,6 +24,7 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 - **Seguimiento de progreso** y certificaciones
 
 ### 📊 **Reportes Diarios**
+
 - **Formularios de reporte** para actividades diarias
 - **Estadísticas de estudiantes** (demografía, temas, resultados)
 - **Información de personal docente** y facultad
@@ -24,12 +32,14 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 - **Análisis de porcentajes** por temas tratados
 
 ### 👤 **Gestión de Usuario**
+
 - **Autenticación segura** con verificación de dispositivo
 - **Perfil personalizable** con información profesional
 - **Sistema de roles** y permisos
 - **Integración con redes sociales** (Facebook, Twitter, LinkedIn)
 
 ### 🏠 **Dashboard Integrado**
+
 - **WebView integrado** con el blog de NSCA
 - **Navegación por pestañas** intuitiva
 - **Acceso rápido** a funciones principales
@@ -38,23 +48,27 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 ## 🛠️ Tecnologías Utilizadas
 
 ### **Frontend**
+
 - **Flutter 3.35.3** - Framework de desarrollo multiplataforma
 - **Dart 3.9.2** - Lenguaje de programación
 - **Provider** - Gestión de estado
 - **Material Design** - Sistema de diseño
 
 ### **Backend Integration**
+
 - **HTTP Client** - Comunicación con API REST
 - **Shared Preferences** - Almacenamiento local
 - **SQLite** - Base de datos local para contenido offline
 
 ### **Multimedia**
+
 - **Video Player** - Reproductor de videos
 - **Vimeo Embed Player** - Integración con Vimeo
 - **YouTube Player** - Integración con YouTube
 - **WebView Flutter** - Contenido web integrado
 
 ### **Funcionalidades Adicionales**
+
 - **Image Picker** - Selección de imágenes
 - **URL Launcher** - Apertura de enlaces externos
 - **Share Plus** - Compartir contenido
@@ -63,7 +77,7 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 
 ## 📁 Estructura del Proyecto
 
-```
+```text
 lib/
 ├── constants.dart          # Configuraciones y colores
 ├── main.dart              # Punto de entrada de la aplicación
@@ -90,6 +104,7 @@ lib/
 ## 🚀 Instalación y Configuración
 
 ### **Prerrequisitos**
+
 - Flutter SDK 3.7.2 o superior
 - Dart SDK 3.9.2 o superior
 - Android Studio / Xcode
@@ -98,22 +113,26 @@ lib/
 ### **Pasos de Instalación**
 
 1. **Clonar el repositorio**
+
    ```bash
-   git clone [URL_DEL_REPOSITORIO]
+   git clone https://github.com/Angello-27/nsca_daily.git
    cd nsca_daily
    ```
 
 2. **Instalar dependencias**
+
    ```bash
    flutter pub get
    ```
 
 3. **Configurar la base de datos**
+
    ```bash
    flutter packages pub run build_runner build
    ```
 
 4. **Ejecutar la aplicación**
+
    ```bash
    flutter run
    ```
@@ -121,10 +140,12 @@ lib/
 ## 🔧 Configuración
 
 ### **Variables de Entorno**
-- `BASE_URL`: URL base de la API (configurada en `constants.dart`)
+
+- `BASE_URL`: [https://www.nscaacademy.org/](https://www.nscaacademy.org/) (configurada en `constants.dart`)
 - Configuración de colores y temas en `constants.dart`
 
 ### **Permisos Requeridos**
+
 - **Android**: Internet, Almacenamiento, Cámara
 - **iOS**: Internet, Galería de fotos, Cámara
 
@@ -148,18 +169,21 @@ lib/
 ## 📊 Funcionalidades del Sistema
 
 ### **Autenticación**
+
 - Login/Registro con validación
 - Recuperación de contraseña
 - Verificación de dispositivo
 - Gestión de sesiones
 
 ### **Cursos**
+
 - Catálogo completo de cursos
 - Filtros y búsqueda
 - Progreso de aprendizaje
 - Certificaciones
 
 ### **Reportes**
+
 - Formularios de reporte diario
 - Estadísticas detalladas
 - Exportación de datos
@@ -180,15 +204,33 @@ Este proyecto es propiedad de la **National School Chaplain Association (NSCA)**
 ## 📞 Soporte
 
 Para soporte técnico o consultas sobre la aplicación, contacta a:
-- **Email**: [email de soporte]
-- **Website**: [https://www.nationalschoolchaplainassociation.org](https://www.nationalschoolchaplainassociation.org)
+
+### **Información de Contacto**
+
+- **Email**: [info@campuschaplains.org](mailto:info@campuschaplains.org)
+- **Teléfono**: 405.831.3299
+- **Website**: [https://www.nscaacademy.org/](https://www.nscaacademy.org/)
+- **Dirección**: P.O. Box 720746, Norman OK 73070
+
+### **Horarios de Atención**
+
+- **Lunes a Viernes**: 8:00 AM - 6:00 PM (CST)
+
+### **Enlaces Útiles**
+
+- [NSCA Academy](https://www.nscaacademy.org/) - Plataforma de aprendizaje
+- [National School Chaplain Association](https://www.nationalschoolchaplainassociation.org/) - Organización principal
 
 ## 🔄 Actualizaciones
 
 - **Versión actual**: 0.1.0
-- **Última actualización**: [Fecha]
-- **Próximas características**: [Lista de features planificadas]
+- **Última actualización**: 3 de enero de 2025
+- **Próximas características**:
+  - Mejoras en la interfaz de usuario
+  - Nuevas funcionalidades de reportes
+  - Optimización de rendimiento
+  - Integración con más plataformas de video
 
 ---
 
-**Desarrollado con ❤️ para la National School Chaplain Association**
+## Desarrollado con ❤️ para la National School Chaplain Association
