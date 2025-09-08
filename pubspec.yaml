@@ -1,65 +1,90 @@
+# NSCA Daily - Academia de Capellanes Escolares
+# Aplicación móvil Flutter para la National School Chaplain Association (NSCA)
+# Proporciona una plataforma de aprendizaje en línea completa para capellanes escolares
+
 name: nsca_daily
-description: "A new Flutter project."
-publish_to: 'none'
+description: "Aplicación móvil para la formación y gestión de capellanes escolares de NSCA"
+publish_to: 'none'  # No se publica en pub.dev (aplicación privada)
 version: 0.1.0
 
+# Configuración del entorno de desarrollo
 environment:
-  sdk: ^3.7.2
+  sdk: ^3.7.2  # Requiere Dart SDK 3.7.2 o superior
 
+# Dependencias principales de la aplicación
 dependencies:
   flutter:
     sdk: flutter
   
-  cupertino_icons: ^1.0.8
-  get_it: ^8.0.3
-  provider: ^6.1.4
-  http: ^1.3.0
-  shared_preferences: ^2.5.3
-  cached_network_image: ^3.4.1
-  flutter_staggered_grid_view: ^0.7.0
-  percent_indicator: ^4.2.5
-  material_design_icons_flutter: ^7.0.7296
-  image_picker: ^1.1.2
-  url_launcher: ^6.3.1
-  intl: ^0.20.2
-  sqflite: ^2.4.2
-  path_provider: ^2.1.5
-  path: ^1.9.1
-  connectivity_plus: ^6.1.4
-  html_unescape: ^2.0.0
-  universal_html: ^2.2.4
-  pod_player: ^0.2.2
-  webview_flutter: ^4.11.0
-  logging: ^1.3.0
-  json_annotation: ^4.9.0
-  vimeo_embed_player: ^1.0.2
-  share_plus: ^11.0.0
-  youtube_player_flutter: ^9.1.1
-  video_player: ^2.9.5
-  lottie: ^2.2.0
+  # Iconos y UI
+  cupertino_icons: ^1.0.8  # Iconos de iOS/Cupertino
+  material_design_icons_flutter: ^7.0.7296  # Iconos adicionales de Material Design
+  
+  # Gestión de estado y arquitectura
+  provider: ^6.1.4  # Gestión de estado reactivo
+  get_it: ^8.0.3  # Inyección de dependencias
+  
+  # Comunicación y datos
+  http: ^1.3.0  # Cliente HTTP para API REST
+  shared_preferences: ^2.5.3  # Almacenamiento local de preferencias
+  sqflite: ^2.4.2  # Base de datos SQLite local
+  path_provider: ^2.1.5  # Acceso a directorios del sistema
+  path: ^1.9.1  # Manipulación de rutas de archivos
+  
+  # Multimedia y contenido
+  cached_network_image: ^3.4.1  # Caché de imágenes de red
+  video_player: ^2.9.5  # Reproductor de videos
+  vimeo_embed_player: ^1.0.2  # Reproductor de Vimeo
+  youtube_player_flutter: ^9.1.1  # Reproductor de YouTube
+  pod_player: ^0.2.2  # Reproductor de podcasts
+  lottie: ^2.2.0  # Animaciones Lottie
+  
+  # UI y experiencia de usuario
+  flutter_staggered_grid_view: ^0.7.0  # Grid con elementos de diferentes tamaños
+  percent_indicator: ^4.2.5  # Indicadores de progreso circular/linear
+  webview_flutter: ^4.11.0  # WebView para contenido web integrado
+  
+  # Funcionalidades del dispositivo
+  image_picker: ^1.1.2  # Selección de imágenes desde galería/cámara
+  url_launcher: ^6.3.1  # Apertura de URLs y enlaces externos
+  share_plus: ^11.0.0  # Compartir contenido
+  connectivity_plus: ^6.1.4  # Detección de conectividad de red
+  
+  # Utilidades y formato
+  intl: ^0.20.2  # Internacionalización y formato de fechas/números
+  html_unescape: ^2.0.0  # Decodificación de entidades HTML
+  universal_html: ^2.2.4  # HTML universal para web y móvil
+  logging: ^1.3.0  # Sistema de logging
+  json_annotation: ^4.9.0  # Anotaciones para serialización JSON
   
 
+# Dependencias de desarrollo y testing
 dev_dependencies:
   flutter_test:
-    sdk: flutter
-  flutter_lints: ^5.0.0
-  json_serializable: ^6.9.5
+    sdk: flutter  # Framework de testing de Flutter
+  flutter_lints: ^5.0.0  # Reglas de linting para código Dart/Flutter
+  json_serializable: ^6.9.5  # Generación automática de código para serialización JSON
 
+# Configuración de Flutter
 flutter:
-  uses-material-design: true
+  uses-material-design: true  # Habilita Material Design por defecto
+  
+  # Recursos de la aplicación (imágenes, iconos, etc.)
   assets:
-    - assets/images/
-    - assets/images/splash.png
-    - assets/images/login_forget.png
-    - assets/images/do_login.png
-    - assets/images/long_arrow_right.png
-    - assets/images/loading_animated.gif
-    - assets/images/play.png
-    - assets/images/no_connection.png
+    - assets/images/  # Directorio general de imágenes
+    - assets/images/splash.png  # Imagen de pantalla de carga
+    - assets/images/login_forget.png  # Imagen para recuperación de contraseña
+    - assets/images/do_login.png  # Imagen para proceso de login
+    - assets/images/long_arrow_right.png  # Icono de flecha larga
+    - assets/images/loading_animated.gif  # Animación de carga
+    - assets/images/play.png  # Icono de reproducción
+    - assets/images/no_connection.png  # Imagen para estado sin conexión
+  
+  # Fuentes personalizadas
   fonts:
-    - family: google_sans
+    - family: google_sans  # Familia de fuentes Google Sans
       fonts:
-        - asset: assets/fonts/google_sans_regular.ttf
-        - asset: assets/fonts/google_sans_bold.ttf
+        - asset: assets/fonts/google_sans_regular.ttf  # Fuente regular
+        - asset: assets/fonts/google_sans_bold.ttf  # Fuente en negrita
           weight: 700
   
