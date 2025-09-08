@@ -556,7 +556,7 @@ class _McbdTwoState extends State<McbdTwo> with SingleTickerProviderStateMixin {
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : NestedScrollView(
@@ -1025,7 +1025,7 @@ class _McbdTwoState extends State<McbdTwo> with SingleTickerProviderStateMixin {
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : addonBody(),

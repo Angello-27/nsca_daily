@@ -557,7 +557,7 @@ class _McbdThreeState extends State<McbdThree>
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : NestedScrollView(
@@ -1026,7 +1026,7 @@ class _McbdThreeState extends State<McbdThree>
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : addonBody(),

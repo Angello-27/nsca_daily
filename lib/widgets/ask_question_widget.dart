@@ -162,7 +162,7 @@ class _AskQuestionWidgetState extends State<AskQuestionWidget> {
                           _isLoading
                               ? Center(
                                 child: CircularProgressIndicator(
-                                  color: kPrimaryColor.withOpacity(0.7),
+                                  color: kPrimaryColor.withValues(alpha: 0.7),
                                 ),
                               )
                               : MaterialButton(

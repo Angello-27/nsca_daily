@@ -55,7 +55,7 @@ class _BundleListScreenState extends State<BundleListScreen> {
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : SingleChildScrollView(
@@ -90,10 +90,8 @@ class _BundleListScreenState extends State<BundleListScreen> {
                             child: BundleListItem(
                               id: bundles[index].id,
                               title: bundles[index].title,
-                              // ignore: prefer_interpolation_to_compose_strings
                               banner:
-                                  '$BASE_URL/uploads/course_bundle/banner/' +
-                                  bundles[index].banner,
+                                  '$BASE_URL/uploads/course_bundle/banner/${bundles[index].banner}',
                               averageRating: bundles[index].averageRating,
                               numberOfRatings: bundles[index].numberOfRatings,
                               price: bundles[index].price,

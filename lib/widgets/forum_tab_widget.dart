@@ -208,7 +208,7 @@ class _ForumTabWidgetState extends State<ForumTabWidget> {
   forumBody() {
     if (_isInit && activeQuestions.isEmpty) {
       return Center(
-        child: CircularProgressIndicator(color: kPrimaryColor.withOpacity(0.7)),
+        child: CircularProgressIndicator(color: kPrimaryColor.withValues(alpha: 0.7)),
       );
     } else {
       return RefreshIndicator(
@@ -221,7 +221,7 @@ class _ForumTabWidgetState extends State<ForumTabWidget> {
             _isLoading
                 ? Center(
                   child: CircularProgressIndicator(
-                    color: kPrimaryColor.withOpacity(0.7),
+                    color: kPrimaryColor.withValues(alpha: 0.7),
                   ),
                 )
                 : SingleChildScrollView(

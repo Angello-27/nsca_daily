@@ -12,7 +12,7 @@ import 'shared_pref_helper.dart';
 class Courses with ChangeNotifier, CourseDetailMixin {
   List<Course> _items = [];
   List<Course> _topItems = [];
-  List<CourseDetail> _courseDetailsitems = [];
+  final List<CourseDetail> _courseDetailsitems = [];
 
   Courses(this._items, this._topItems);
 

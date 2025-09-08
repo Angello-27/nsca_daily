@@ -53,7 +53,7 @@ class AccountListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: kPrimaryColor.withOpacity(0.7),
+        backgroundColor: kPrimaryColor.withValues(alpha: 0.7),
         radius: 20,
         child: Padding(
           padding: const EdgeInsets.all(6),
@@ -83,7 +83,7 @@ class AccountListTile extends StatelessWidget {
               ),
               child: ImageIcon(
                 const AssetImage("assets/images/long_arrow_right.png"),
-                color: kPrimaryColor.withOpacity(0.7),
+                color: kPrimaryColor.withValues(alpha: 0.7),
                 size: 25,
               ),
             ),

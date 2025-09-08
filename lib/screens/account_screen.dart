@@ -136,13 +136,13 @@ class _AccountScreenState extends State<AccountScreen> {
         if (dataSnapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
-              color: kPrimaryColor.withOpacity(0.7),
+              color: kPrimaryColor.withValues(alpha: 0.7),
             ),
           );
         } else {
           if (dataSnapshot.error != null) {
             //error
-            return _connectionStatus == ConnectivityResult.none
+            return _connectionStatus.contains(ConnectivityResult.none)
                 ? Center(
                   child: Column(
                     children: [

@@ -93,7 +93,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
                 height: MediaQuery.of(context).size.height * .5,
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: kPrimaryColor.withOpacity(0.7),
+                    color: kPrimaryColor.withValues(alpha: 0.7),
                   ),
                 ),
               );

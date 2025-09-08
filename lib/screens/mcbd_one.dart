@@ -510,7 +510,7 @@ class _McbdOneState extends State<McbdOne> with SingleTickerProviderStateMixin {
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : SingleChildScrollView(
@@ -888,7 +888,7 @@ class _McbdOneState extends State<McbdOne> with SingleTickerProviderStateMixin {
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : myCourseBody(),

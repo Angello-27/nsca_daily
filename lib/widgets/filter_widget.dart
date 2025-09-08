@@ -230,7 +230,7 @@ class _FilterWidgetState extends State<FilterWidget> {
   // Indicador de carga:
   Widget _loadingView() {
     return Center(
-      child: CircularProgressIndicator(color: kPrimaryColor.withOpacity(0.7)),
+      child: CircularProgressIndicator(color: kPrimaryColor.withValues(alpha: 0.7)),
     );
   }
 

@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: MediaQuery.of(context).size.height * .5,
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: kPrimaryColor.withOpacity(0.7),
+                    color: kPrimaryColor.withValues(alpha: 0.7),
                   ),
                 ),
               );
@@ -212,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const Text('All courses'),
                                   Icon(
                                     Icons.arrow_forward_ios_rounded,
-                                    color: kPrimaryColor.withOpacity(0.7),
+                                    color: kPrimaryColor.withValues(alpha: 0.7),
                                     size: 18,
                                   ),
                                 ],
@@ -224,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _isLoading
                         ? Center(
                           child: CircularProgressIndicator(
-                            color: kPrimaryColor.withOpacity(0.7),
+                            color: kPrimaryColor.withValues(alpha: 0.7),
                           ),
                         )
                         : topCourses.isNotEmpty
@@ -283,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const Text('All bundles'),
                                         Icon(
                                           Icons.arrow_forward_ios_rounded,
-                                          color: kPrimaryColor.withOpacity(0.7),
+                                          color: kPrimaryColor.withValues(alpha: 0.7),
                                           size: 18,
                                         ),
                                       ],
@@ -357,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const Text('All courses'),
                                 Icon(
                                   Icons.arrow_forward_ios_rounded,
-                                  color: kPrimaryColor.withOpacity(0.7),
+                                  color: kPrimaryColor.withValues(alpha: 0.7),
                                   size: 18,
                                 ),
                               ],

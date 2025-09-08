@@ -43,7 +43,7 @@ class _SearchWidgetState extends State<SearchWidget> {
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : Scaffold(

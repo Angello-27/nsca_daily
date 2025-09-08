@@ -179,7 +179,7 @@ class _ForumReplyScreenState extends State<ForumReplyScreen> {
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : SingleChildScrollView(

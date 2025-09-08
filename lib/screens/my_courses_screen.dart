@@ -252,8 +252,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
             height: MediaQuery.of(context).size.height * .7,
             child: Center(
               child: CircularProgressIndicator(
-                // ignore: deprecated_member_use
-                color: kPrimaryColor.withOpacity(0.7),
+                color: kPrimaryColor.withValues(alpha: 0.7),
               ),
             ),
           );
@@ -319,7 +318,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
             return Center(
               child: CircularProgressIndicator(
                 // ignore: deprecated_member_use
-                color: kPrimaryColor.withOpacity(0.7),
+                color: kPrimaryColor.withValues(alpha: 0.7),
               ),
             );
           } else {

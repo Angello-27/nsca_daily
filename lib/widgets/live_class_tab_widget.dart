@@ -55,7 +55,7 @@ class _LiveClassTabWidgetState extends State<LiveClassTabWidget> {
             height: MediaQuery.of(context).size.height * .50,
             child: Center(
               child: CircularProgressIndicator(
-                color: kPrimaryColor.withOpacity(0.7),
+                color: kPrimaryColor.withValues(alpha: 0.7),
               ),
             ),
           );

@@ -1,9 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:io';
 import '../constants.dart';
-import '../models/common_functions.dart';
-import '../models/user.dart';
 import '../providers/auth.dart';
 import '../widgets/app_bar_two.dart';
 import '../widgets/user_image_picker.dart';
@@ -23,8 +20,6 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey();
 
-  bool _isLoading = false;
-
   final Map<String, String> _userData = {
     'first_name': '',
     'last_name': '',
@@ -41,51 +36,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) {
-      // Invalid!
-      return;
-    }
-    _formKey.currentState!.save();
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      // Log user in
-      // debugPrint(_userData['first_name']);
-      final updateUser = User(
-        userId: _userData['user_id'],
-        firstName: _userData['first_name'],
-        lastName: _userData['last_name'],
-        email: _userData['email'],
-        role: _userData['role'],
-        validity: _userData['validity'],
-        deviceVerification: _userData['device_verification'],
-        token: _userData['token'],
-        biography: _userData['bio'],
-        twitter: _userData['twitter'],
-        facebook: _userData['facebook'],
-        linkedIn: _userData['linkedin'],
-      );
-      await Provider.of<Auth>(
-        context,
-        listen: false,
-      ).updateUserData(updateUser);
-
-      CommonFunctions.showSuccessToast('User updated Successfully');
-    } on HttpException {
-      var errorMsg = 'Update failed';
-      CommonFunctions.showErrorDialog(errorMsg, context);
-    } catch (error) {
-      // debugPrint(error);
-      const errorMsg = 'Update failed!';
-      CommonFunctions.showErrorDialog(errorMsg, context);
-    }
-    setState(() {
-      _isLoading = false;
-    });
-  }
 
   InputDecoration getInputDecoration(String hintext, IconData iconData) {
     return InputDecoration(
@@ -113,7 +63,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (dataSnapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                color: kPrimaryColor.withOpacity(0.7),
+                color: kPrimaryColor.withValues(alpha: 0.7),
               ),
             );
           } else {

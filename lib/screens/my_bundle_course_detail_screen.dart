@@ -557,7 +557,7 @@ class _MyBundleCourseDetailScreenState extends State<MyBundleCourseDetailScreen>
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : SingleChildScrollView(
@@ -1182,7 +1182,7 @@ class _MyBundleCourseDetailScreenState extends State<MyBundleCourseDetailScreen>
     return _isLoading
         ? Center(
           child: CircularProgressIndicator(
-            color: kPrimaryColor.withOpacity(0.7),
+            color: kPrimaryColor.withValues(alpha: 0.7),
           ),
         )
         : NestedScrollView(
@@ -1409,7 +1409,7 @@ class _MyBundleCourseDetailScreenState extends State<MyBundleCourseDetailScreen>
           _isLoading
               ? Center(
                 child: CircularProgressIndicator(
-                  color: kPrimaryColor.withOpacity(0.7),
+                  color: kPrimaryColor.withValues(alpha: 0.7),
                 ),
               )
               : liveClassStatus == false && courseForumStatus == false
