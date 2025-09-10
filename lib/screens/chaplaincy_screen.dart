@@ -13,10 +13,9 @@ class ChaplaincyScreen extends StatefulWidget {
 }
 
 class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
-  late final WebViewController _controller;
+  WebViewController? _controller;
   bool _isLoading = true;
   String? _authToken;
-  String? _chaplaincyUrl;
 
   @override
   void initState() {
@@ -29,6 +28,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
     _setupWebView();
   }
 
+
   Future<void> _getAuthToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -37,9 +37,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
       if (userData != null && userData.isNotEmpty) {
         final response = json.decode(userData);
         _authToken = response['token'];
-        
-        // Construir URL con token de autenticación
-        _chaplaincyUrl = '$CHAPLAINCY_URL?token=$_authToken';
       } else {
         _showLoginRequiredDialog();
         return;
@@ -51,34 +48,68 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
   }
 
   void _setupWebView() {
-    if (_chaplaincyUrl == null) return;
+    const chaplaincyUrl = '$BASE_URL/chaplain';
+    
+    debugPrint('🌐 Cargando página de capellanía: $chaplaincyUrl');
+    if (_authToken != null) {
+      debugPrint('🔐 Autenticación JWT activa');
+    } else {
+      debugPrint('⚠️ Sin autenticación');
+    }
 
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFFFFFFFF))
-      ..loadRequest(Uri.parse(_chaplaincyUrl!))
+      ..setUserAgent('NSCA-Daily-App/1.0')
+      ..loadRequest(
+        Uri.parse(chaplaincyUrl),
+        headers: _authToken != null ? {
+          'Authorization': 'Bearer $_authToken',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent': 'NSCA-Daily-App/1.0',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        } : {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'User-Agent': 'NSCA-Daily-App/1.0',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (uri) {
             setState(() => _isLoading = true);
-            debugPrint('Cargando página de capellanía: $uri');
+            if (uri.toString().contains('/login') || uri.toString().contains('/auth')) {
+              debugPrint('⚠️ Redirigiendo al login - Token puede ser inválido');
+            }
           },
           onPageFinished: (uri) {
             setState(() => _isLoading = false);
-            debugPrint('Página de capellanía cargada: $uri');
+            
+            if (uri.toString().contains('/chaplain')) {
+              debugPrint('✅ Página de capellanía cargada correctamente');
+            } else if (uri.toString().contains('/login') || uri.toString().contains('/auth')) {
+              debugPrint('❌ Error: Redirigido al login');
+            }
+            
+            // Inyectar token en la página si es necesario
+            if (_authToken != null) {
+              _injectTokenIntoPage();
+            }
           },
           onWebResourceError: (error) {
             setState(() => _isLoading = false);
-            debugPrint('Error en WebView: ${error.description}');
-            _showErrorDialog(error.description);
+            debugPrint('❌ Error WebView: ${error.errorCode} - ${error.description}');
+            _showErrorDialog('WebView Error', 'Error ${error.errorCode}: ${error.description}');
           },
           onNavigationRequest: (request) {
-            // Permitir navegación dentro del dominio de capellanía
-            if (request.url.startsWith('http://localhost/nsca-lms/') || 
-                request.url.startsWith('https://www.nscaacademy.org/')) {
+            // Permitir navegación dentro del dominio de la aplicación
+            if (request.url.startsWith('$BASE_URL/')) {
               return NavigationDecision.navigate;
             }
             // Bloquear navegación externa
+            debugPrint('🚫 Bloqueando navegación externa: ${request.url}');
             return NavigationDecision.prevent;
           },
         ),
@@ -93,10 +124,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
 
   void _handleJavaScriptMessage(String message) {
     // Manejar mensajes del JavaScript de la página de capellanía
-    debugPrint('Mensaje desde JavaScript: $message');
-    
-    // Aquí puedes manejar diferentes tipos de mensajes
-    // Por ejemplo, cuando el usuario complete una etapa
     if (message.startsWith('stage_completed:')) {
       final stageNumber = message.split(':')[1];
       _showStageCompletedDialog(stageNumber);
@@ -124,24 +151,30 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
     );
   }
 
-  void _showErrorDialog(String error) {
+  void _showErrorDialog(String title, String message, {VoidCallback? onRetry}) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Loading Error'),
-        content: Text('Could not load the chaplain certification page: $error'),
+        title: Text(title),
+        content: Text(message),
         actions: [
+          if (onRetry != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                onRetry();
+              },
+              child: const Text('Retry'),
+            ),
           TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _refreshWebView();
-            },
-            child: const Text('Retry'),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),
     );
   }
+
 
   void _showStageCompletedDialog(String stageNumber) {
     showDialog(
@@ -175,9 +208,48 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
     );
   }
 
-  Future<void> _refreshWebView() async {
-    if (_chaplaincyUrl != null) {
-      await _controller.loadRequest(Uri.parse(_chaplaincyUrl!));
+
+
+  Future<void> _injectTokenIntoPage() async {
+    if (_authToken == null || _controller == null) return;
+    
+    try {
+      // JavaScript para inyectar el token en localStorage y sessionStorage
+      final jsCode = '''
+        (function() {
+          // Guardar token en localStorage para que la página lo pueda usar
+          localStorage.setItem('auth_token', '$_authToken');
+          sessionStorage.setItem('auth_token', '$_authToken');
+          
+          // También agregar a window para acceso global
+          window.authToken = '$_authToken';
+          
+          // Interceptar fetch/XMLHttpRequest para agregar headers automáticamente
+          const originalFetch = window.fetch;
+          window.fetch = function(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['Authorization'] = 'Bearer $_authToken';
+            return originalFetch(url, options);
+          };
+          
+          const originalXHROpen = XMLHttpRequest.prototype.open;
+          XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+            this.addEventListener('readystatechange', function() {
+              if (this.readyState === 1) {
+                this.setRequestHeader('Authorization', 'Bearer $_authToken');
+              }
+            });
+            return originalXHROpen.apply(this, arguments);
+          };
+          
+          console.log('🔐 Token JWT inyectado correctamente');
+        })();
+      ''';
+      
+      await _controller!.runJavaScript(jsCode);
+      
+    } catch (e) {
+      debugPrint('❌ Error inyectando token: $e');
     }
   }
 
@@ -185,30 +257,11 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'School Chaplain Certification',
-          style: TextStyle(
-            color: kTextColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: kBackgroundColor,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        actions: [
-          IconButton(
-            onPressed: _refreshWebView,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           // WebView principal
-          if (_chaplaincyUrl != null)
-            WebViewWidget(controller: _controller)
+          if (_controller != null)
+            WebViewWidget(controller: _controller!)
           else
             Center(
               child: Column(
@@ -225,7 +278,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
             ),
           
           // Indicador de carga
-          if (_isLoading && _chaplaincyUrl != null)
+          if (_isLoading)
             Container(
               color: Colors.white.withValues(alpha: 0.8),
               child: Center(
@@ -243,11 +296,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
               ),
             ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _refreshWebView,
-        backgroundColor: kPrimaryColor,
-        child: const Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
