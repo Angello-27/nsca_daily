@@ -227,7 +227,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
           // Indicador de carga
           if (_isLoading && _chaplaincyUrl != null)
             Container(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
