@@ -318,12 +318,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                 action: PermissionResponseAction.GRANT,
               );
             },
-            androidOnPermissionRequest: (controller, origin, resources) async {
-              return PermissionRequestResponse(
-                resources: resources,
-                action: PermissionRequestResponseAction.GRANT,
-              );
-            },
           ),
 
           // Indicador de carga
