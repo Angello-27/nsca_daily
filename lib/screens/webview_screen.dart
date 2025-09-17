@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/app_logo.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../constants.dart';
 
 class WebViewScreen extends StatefulWidget {
@@ -22,7 +22,7 @@ class WebViewScreen extends StatefulWidget {
 }
 
 class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController _controller;
+  InAppWebViewController? _controller;
   final _controllerTwo = StreamController<AppLogo>();
 
   fetchMyLogo() async {
@@ -43,52 +43,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
   void initState() {
     super.initState();
     fetchMyLogo();
-
-    // #docregion platform_features
-    late final PlatformWebViewControllerCreationParams params;
-    params = const PlatformWebViewControllerCreationParams();
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-    // #enddocregion platform_features
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFFFFFFF))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            debugPrint('WebView is loading (progress : $progress%)');
-          },
-          onPageStarted: (String url) {
-            debugPrint('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            debugPrint('Page finished loading: $url');
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('''
-Page resource error:
-  code: ${error.errorCode}
-  description: ${error.description}
-  errorType: ${error.errorType}
-  isForMainFrame: ${error.isForMainFrame}
-          ''');
-          },
-        ),
-      )
-      ..addJavaScriptChannel(
-        'Toaster',
-        onMessageReceived: (JavaScriptMessage message) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message.message)));
-        },
-      )
-      ..loadRequest(Uri.parse(widget.url));
-    // #enddocregion platform_features
-
-    _controller = controller;
   }
 
   @override
@@ -121,18 +75,60 @@ Page resource error:
         actions: <Widget>[NavigationControls(webViewController: _controller)],
         backgroundColor: kBackgroundColor,
       ),
-      body: WebViewWidget(controller: _controller),
+      body: InAppWebView(
+        initialUrlRequest: URLRequest(
+          url: WebUri(widget.url),
+        ),
+        initialSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          allowFileAccess: true,
+          domStorageEnabled: true,
+        ),
+        onWebViewCreated: (controller) {
+          _controller = controller;
+          
+          // Agregar JavaScript channel equivalente al 'Toaster'
+          _controller!.addJavaScriptHandler(
+            handlerName: 'Toaster',
+            callback: (args) {
+              if (args.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(args[0].toString())),
+                );
+              }
+            },
+          );
+        },
+        onProgressChanged: (controller, progress) {
+          debugPrint('WebView is loading (progress : $progress%)');
+        },
+        onLoadStart: (controller, url) {
+          debugPrint('Page started loading: ${url.toString()}');
+        },
+        onLoadStop: (controller, url) {
+          debugPrint('Page finished loading: ${url.toString()}');
+        },
+        onReceivedError: (controller, request, error) {
+          debugPrint('''
+Page resource error:
+  code: ${error.type}
+  description: ${error.description}
+          ''');
+        },
+      ),
     );
   }
 
   Widget favoriteButton() {
     return FloatingActionButton(
       onPressed: () async {
-        final String? url = await _controller.currentUrl();
-        if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Favorited $url')));
+        if (_controller != null) {
+          final url = await _controller!.getUrl();
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Favorited ${url.toString()}')));
+          }
         }
       },
       child: const Icon(Icons.favorite),
@@ -143,7 +139,7 @@ Page resource error:
 class NavigationControls extends StatelessWidget {
   const NavigationControls({super.key, required this.webViewController});
 
-  final WebViewController webViewController;
+  final InAppWebViewController? webViewController;
 
   @override
   Widget build(BuildContext context) {
@@ -152,8 +148,8 @@ class NavigationControls extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () async {
-            if (await webViewController.canGoBack()) {
-              await webViewController.goBack();
+            if (webViewController != null && await webViewController!.canGoBack()) {
+              await webViewController!.goBack();
             } else {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -166,8 +162,8 @@ class NavigationControls extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios),
           onPressed: () async {
-            if (await webViewController.canGoForward()) {
-              await webViewController.goForward();
+            if (webViewController != null && await webViewController!.canGoForward()) {
+              await webViewController!.goForward();
             } else {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -179,7 +175,11 @@ class NavigationControls extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.replay),
-          onPressed: () => webViewController.reload(),
+          onPressed: () {
+            if (webViewController != null) {
+              webViewController!.reload();
+            }
+          },
         ),
       ],
     );

@@ -1,7 +1,7 @@
 // lib/screens/home_screen.dart
 import '../constants.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,33 +12,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Controlador del WebView, por si necesitas acciones (reload, etc.)
-  late final WebViewController _controller;
+  InAppWebViewController? _controller;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _controller =
-        WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..loadRequest(
-            Uri.parse('https://www.nationalschoolchaplainassociation.org/blog'),
-          )
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onPageStarted: (uri) => setState(() => _isLoading = true),
-              onPageFinished: (uri) => setState(() => _isLoading = false),
-              onNavigationRequest: (request) {
-                // Opcional: bloquear redirecciones fuera del dominio
-                if (!request.url.startsWith(
-                  'https://www.nationalschoolchaplainassociation.org',
-                )) {
-                  return NavigationDecision.prevent;
-                }
-                return NavigationDecision.navigate;
-              },
-            ),
-          );
   }
 
   Future<void> refreshList() async {
@@ -46,12 +25,20 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isLoading = true;
       });
+      
+      // Recargar el WebView
+      if (_controller != null) {
+        await _controller!.reload();
+      }
 
       setState(() {
         _isLoading = false;
       });
     } catch (error) {
       // Error handling can be added here if needed
+      setState(() {
+        _isLoading = false;
+      });
     }
 
     return;
@@ -64,7 +51,34 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Stack(
         children: [
           // El WebView ocupa todo el espacio
-          WebViewWidget(controller: _controller),
+          InAppWebView(
+            initialUrlRequest: URLRequest(
+              url: WebUri('https://www.nationalschoolchaplainassociation.org/blog'),
+            ),
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+              allowFileAccess: true,
+              domStorageEnabled: true,
+            ),
+            onWebViewCreated: (controller) {
+              _controller = controller;
+            },
+            onLoadStart: (controller, url) {
+              setState(() => _isLoading = true);
+            },
+            onLoadStop: (controller, url) {
+              setState(() => _isLoading = false);
+            },
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              final url = navigationAction.request.url.toString();
+              
+              // Opcional: bloquear redirecciones fuera del dominio
+              if (!url.startsWith('https://www.nationalschoolchaplainassociation.org')) {
+                return NavigationActionPolicy.CANCEL;
+              }
+              return NavigationActionPolicy.ALLOW;
+            },
+          ),
           // Mientras carga, mostramos un indicador
           if (_isLoading)
             SizedBox(
