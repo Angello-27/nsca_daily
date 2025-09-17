@@ -43,12 +43,14 @@ dependencies:
   flutter_staggered_grid_view: ^0.7.0  # Grid con elementos de diferentes tamaños
   percent_indicator: ^4.2.5  # Indicadores de progreso circular/linear
   webview_flutter: ^4.11.0  # WebView para contenido web integrado
+  flutter_inappwebview: ^6.1.5  # WebView avanzado con soporte para file uploads
   
   # Funcionalidades del dispositivo
   image_picker: ^1.1.2  # Selección de imágenes desde galería/cámara
   url_launcher: ^6.3.1  # Apertura de URLs y enlaces externos
   share_plus: ^11.0.0  # Compartir contenido
   connectivity_plus: ^6.1.4  # Detección de conectividad de red
+  permission_handler: ^11.3.1  # Manejo de permisos en dispositivos móviles
   
   # Utilidades y formato
   intl: ^0.20.2  # Internacionalización y formato de fechas/números
@@ -87,4 +89,4 @@ flutter:
         - asset: assets/fonts/google_sans_regular.ttf  # Fuente regular
         - asset: assets/fonts/google_sans_bold.ttf  # Fuente en negrita
           weight: 700
-  
+

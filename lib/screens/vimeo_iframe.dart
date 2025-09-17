@@ -1,6 +1,6 @@
 import '../widgets/app_bar_two.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class VimeoIframe extends StatefulWidget {
   static const routeName = '/vimeo-iframe';
@@ -14,31 +14,32 @@ class VimeoIframe extends StatefulWidget {
 }
 
 class _VimeoIframeState extends State<VimeoIframe> {
-  // final Completer<WebViewController> _controller =
-  //     Completer<WebViewController>();
-
-  late final WebViewController _controller;
+  InAppWebViewController? controller;
+  // ignore: unused_field
   var loadingPercentage = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        WebViewController()
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..loadRequest(
-            Uri.dataFromString('''<iframe 
-                src="${widget.url}?loop=0&autoplay=0" 
-                width="100%" height="100%" frameborder="0" allow="fullscreen" 
-                allowfullscreen></iframe>''', mimeType: 'text/html'),
-          );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBarTwo(),
-      body: Stack(children: [WebViewWidget(controller: _controller)]),
+      body: InAppWebView(
+        initialData: InAppWebViewInitialData(
+          data: '''<iframe 
+              src="${widget.url}?loop=0&autoplay=0" 
+              width="100%" height="100%" frameborder="0" allow="fullscreen" 
+              allowfullscreen></iframe>''',
+          mimeType: 'text/html',
+        ),
+        initialSettings: InAppWebViewSettings(
+          javaScriptEnabled: true,
+          allowFileAccess: true,
+          mediaPlaybackRequiresUserGesture: false,
+          allowsInlineMediaPlayback: true,
+        ),
+        onWebViewCreated: (controller) {
+          this.controller = controller;
+        },
+      ),
     );
   }
 }

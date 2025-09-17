@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../constants.dart';
 
 class ChaplaincyScreen extends StatefulWidget {
@@ -13,8 +13,9 @@ class ChaplaincyScreen extends StatefulWidget {
   State<ChaplaincyScreen> createState() => _ChaplaincyScreenState();
 }
 
-class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
-  WebViewController? _controller;
+class _ChaplaincyScreenState extends State<ChaplaincyScreen>
+    with AutomaticKeepAliveClientMixin {
+  InAppWebViewController? _controller;
   bool _isLoading = true;
   String? _authToken;
   String? _deviceId;
@@ -22,21 +23,32 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
   @override
   void initState() {
     super.initState();
+    // Cargar token inmediatamente para inicialización más rápida
     _initializeWebView();
+    // Solicitar permisos en paralelo (no bloquear la carga)
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    // Solicita permisos de almacenamiento, cámara y archivos
+    await [
+      Permission.camera,
+      Permission.photos, // Para iOS
+      Permission.storage, // Para Android <= 12
+      Permission.mediaLibrary, // Para Android 13+
+      Permission.manageExternalStorage, // Para Android 11+
+    ].request();
   }
 
   Future<void> _initializeWebView() async {
     await _getAuthToken();
-    await _getDeviceId();
-    _setupWebView();
   }
-
 
   Future<void> _getAuthToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString('userData');
-      
+
       if (userData != null && userData.isNotEmpty) {
         final response = json.decode(userData);
         _authToken = response['token'];
@@ -50,101 +62,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
     }
   }
 
-  Future<void> _getDeviceId() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _deviceId = prefs.getString('chaplain_device_id');
-      
-      if (_deviceId == null || _deviceId!.isEmpty) {
-        _deviceId = 'chaplain_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(9999)}';
-        await prefs.setString('chaplain_device_id', _deviceId!);
-        debugPrint('🆔 Nuevo Device ID generado: $_deviceId');
-      } else {
-        debugPrint('🆔 Device ID recuperado: $_deviceId');
-      }
-    } catch (e) {
-      debugPrint('Error obteniendo device ID: $e');
-      _deviceId = 'chaplain_fallback_${Random().nextInt(99999)}';
-    }
-  }
-
-  void _setupWebView() {
-    const chaplaincyUrl = '$BASE_URL/chaplain';
-    
-    debugPrint('🌐 Cargando página de capellanía: $chaplaincyUrl');
-    debugPrint('🆔 Device ID: $_deviceId');
-    if (_authToken != null) {
-      debugPrint('🔐 Autenticación JWT activa');
-    } else {
-      debugPrint('⚠️ Sin autenticación');
-    }
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFFFFFFF))
-      ..setUserAgent('NSCA-Daily-App/1.0')
-      ..loadRequest(
-        Uri.parse(chaplaincyUrl),
-        headers: _authToken != null ? {
-          'Authorization': 'Bearer $_authToken',
-          'X-Device-ID': _deviceId ?? 'unknown',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'User-Agent': 'NSCA-Daily-App/1.0',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-        } : {
-          'X-Device-ID': _deviceId ?? 'unknown',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'User-Agent': 'NSCA-Daily-App/1.0',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-        },
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (uri) {
-            setState(() => _isLoading = true);
-            if (uri.toString().contains('/login') || uri.toString().contains('/auth')) {
-              debugPrint('⚠️ Redirigiendo al login - Token puede ser inválido');
-            }
-          },
-          onPageFinished: (uri) {
-            setState(() => _isLoading = false);
-            
-            if (uri.toString().contains('/chaplain')) {
-              debugPrint('✅ Página de capellanía cargada correctamente');
-            } else if (uri.toString().contains('/login') || uri.toString().contains('/auth')) {
-              debugPrint('❌ Error: Redirigido al login');
-            }
-            
-            // Inyectar token en la página si es necesario
-            if (_authToken != null) {
-              _injectTokenIntoPage();
-            }
-          },
-          onWebResourceError: (error) {
-            setState(() => _isLoading = false);
-            debugPrint('❌ Error WebView: ${error.errorCode} - ${error.description}');
-            _showErrorDialog('WebView Error', 'Error ${error.errorCode}: ${error.description}');
-          },
-          onNavigationRequest: (request) {
-            // Permitir navegación dentro del dominio de la aplicación
-            if (request.url.startsWith('$BASE_URL/')) {
-              return NavigationDecision.navigate;
-            }
-            // Bloquear navegación externa
-            debugPrint('🚫 Bloqueando navegación externa: ${request.url}');
-            return NavigationDecision.prevent;
-          },
-        ),
-      )
-      ..addJavaScriptChannel(
-        'FlutterChannel',
-        onMessageReceived: (JavaScriptMessage message) {
-          _handleJavaScriptMessage(message.message);
-        },
-      );
-  }
 
   void _handleJavaScriptMessage(String message) {
     // Manejar mensajes del JavaScript de la página de capellanía
@@ -159,84 +76,91 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
   void _showLoginRequiredDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Login Required'),
-        content: const Text('You need to log in to access the chaplain certification process.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.pushReplacementNamed(context, '/auth');
-            },
-            child: const Text('Log In'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Login Required'),
+            content: const Text(
+              'You need to log in to access the chaplain certification process.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.pushReplacementNamed(context, '/auth');
+                },
+                child: const Text('Log In'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _showErrorDialog(String title, String message, {VoidCallback? onRetry}) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          if (onRetry != null)
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                onRetry();
-              },
-              child: const Text('Retry'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              if (onRetry != null)
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    onRetry();
+                  },
+                  child: const Text('Retry'),
+                ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
-
 
   void _showStageCompletedDialog(String stageNumber) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Stage Completed!'),
-        content: Text('You have successfully completed stage $stageNumber of the chaplain certification process.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Continue'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Stage Completed!'),
+            content: Text(
+              'You have successfully completed stage $stageNumber of the chaplain certification process.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Continue'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _showChaplaincyCompletedDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Congratulations!'),
-        content: const Text('You have successfully completed the entire chaplain certification process.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Excellent'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Congratulations!'),
+            content: const Text(
+              'You have successfully completed the entire chaplain certification process.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Excellent'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-
-
   Future<void> _injectTokenIntoPage() async {
-    if (_authToken == null || _controller == null || _deviceId == null) return;
-    
+    if (_authToken == null || _controller == null) return;
+
     try {
       // JavaScript mejorado para inyectar sesión específica del dispositivo
       final jsCode = '''
@@ -290,39 +214,140 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
           console.log('🔐 Sesión de capellanía inicializada para dispositivo: $_deviceId');
         })();
       ''';
-      
-      await _controller!.runJavaScript(jsCode);
-      debugPrint('✅ Sesión inyectada - Device: $_deviceId');
-      
+
+      await _controller!.evaluateJavascript(source: jsCode);
     } catch (e) {
       debugPrint('❌ Error inyectando sesión: $e');
     }
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Añade esto si usas AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: kBackgroundColor,
       body: Stack(
         children: [
-          // WebView principal
-          if (_controller != null)
-            WebViewWidget(controller: _controller!)
-          else
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: kPrimaryColor),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Loading chaplain certification process...',
-                    style: TextStyle(color: kSecondaryColor),
-                  ),
-                ],
-              ),
+          // InAppWebView principal con soporte para file uploads
+          InAppWebView(
+            key: const PageStorageKey('chaplaincyWebView'),
+            initialUrlRequest: URLRequest(
+              url: WebUri('$BASE_URL/chaplain/stages'),
+              headers:
+                  _authToken != null
+                      ? {
+                        'Authorization': 'Bearer $_authToken',
+                        'Accept':
+                            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'NSCA-Daily-App/1.0',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                      }
+                      : {
+                        'Accept':
+                            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'NSCA-Daily-App/1.0',
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                      },
             ),
-          
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+              domStorageEnabled: true,
+              allowFileAccessFromFileURLs: true,
+              allowUniversalAccessFromFileURLs: true,
+              mediaPlaybackRequiresUserGesture: false,
+              allowsInlineMediaPlayback: true,
+              userAgent: 'NSCA-Daily-App/1.0',
+              // Habilitar soporte para file uploads
+              allowFileAccess: true,
+              supportZoom: false,
+              useOnLoadResource: true,
+            ),
+            onWebViewCreated: (controller) {
+              _controller = controller;
+              
+              debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
+              if (_authToken != null) {
+                debugPrint('🔐 Autenticación JWT activa');
+              } else {
+                debugPrint('⚠️ Sin autenticación');
+              }
+
+              // Agregar JavaScript channel
+              _controller!.addJavaScriptHandler(
+                handlerName: 'FlutterChannel',
+                callback: (args) {
+                  if (args.isNotEmpty) {
+                    _handleJavaScriptMessage(args[0].toString());
+                  }
+                },
+              );
+            },
+            onLoadStart: (controller, url) {
+              setState(() => _isLoading = true);
+              if (url.toString().contains('/login') ||
+                  url.toString().contains('/auth')) {
+                debugPrint(
+                  '⚠️ Redirigiendo al login - Token puede ser inválido',
+                );
+              }
+            },
+            onLoadStop: (controller, url) async {
+              setState(() => _isLoading = false);
+
+              if (url.toString().contains('/chaplain')) {
+                debugPrint('✅ Página de capellanía cargada correctamente');
+              } else if (url.toString().contains('/login') ||
+                  url.toString().contains('/auth')) {
+                debugPrint('❌ Error: Redirigido al login');
+              }
+
+              // Inyectar token en la página si es necesario
+              if (_authToken != null) {
+                _injectTokenIntoPage();
+              }
+            },
+            onReceivedError: (controller, request, error) {
+              setState(() => _isLoading = false);
+              debugPrint(
+                '❌ Error WebView: ${error.type} - ${error.description}',
+              );
+              _showErrorDialog('WebView Error', 'Error: ${error.description}');
+            },
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              final url = navigationAction.request.url.toString();
+
+              // Permitir navegación dentro del dominio de la aplicación
+              if (url.startsWith('$BASE_URL/')) {
+                return NavigationActionPolicy.ALLOW;
+              }
+
+              // Bloquear navegación externa
+              debugPrint('🚫 Bloqueando navegación externa: $url');
+              return NavigationActionPolicy.CANCEL;
+            },
+            // ¡ESTA ES LA PARTE CLAVE! Manejo de file uploads
+            onCreateWindow: (controller, createWindowAction) async {
+              return true;
+            },
+            onPermissionRequest: (controller, request) async {
+              return PermissionResponse(
+                resources: request.resources,
+                action: PermissionResponseAction.GRANT,
+              );
+            },
+            androidOnPermissionRequest: (controller, origin, resources) async {
+              return PermissionRequestResponse(
+                resources: resources,
+                action: PermissionRequestResponseAction.GRANT,
+              );
+            },
+          ),
+
           // Indicador de carga
           if (_isLoading)
             Container(
