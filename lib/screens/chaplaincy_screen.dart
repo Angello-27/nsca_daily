@@ -17,14 +17,13 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
     with AutomaticKeepAliveClientMixin {
   InAppWebViewController? _controller;
   bool _isLoading = true;
+  bool _tokenLoaded = false; // Nuevo flag
   String? _authToken;
 
   @override
   void initState() {
     super.initState();
-    // Cargar token inmediatamente para inicialización más rápida
     _initializeWebView();
-    // Solicitar permisos en paralelo (no bloquear la carga)
     _requestPermissions();
   }
 
@@ -41,6 +40,9 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
 
   Future<void> _initializeWebView() async {
     await _getAuthToken();
+    setState(() {
+      _tokenLoaded = true; // Marcar que el token ya se cargó
+    });
   }
 
   Future<void> _getAuthToken() async {
@@ -51,6 +53,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
       if (userData != null && userData.isNotEmpty) {
         final response = json.decode(userData);
         _authToken = response['token'];
+        debugPrint('Token obtenido: $_authToken');
       } else {
         _showLoginRequiredDialog();
         return;
@@ -60,7 +63,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
       _showLoginRequiredDialog();
     }
   }
-
 
   void _handleJavaScriptMessage(String message) {
     // Manejar mensajes del JavaScript de la página de capellanía
@@ -209,29 +211,20 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
       backgroundColor: kBackgroundColor,
       body: Stack(
         children: [
-          // InAppWebView principal con soporte para file uploads
-          InAppWebView(
-            key: const PageStorageKey('chaplaincyWebView'),
-            initialUrlRequest: URLRequest(
-              url: WebUri('$BASE_URL/chaplain/stages'),
-              headers:
-                  _authToken != null
-                      ? {
-                        'Authorization': 'Bearer $_authToken',
-                        'Accept':
-                            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'NSCA-Daily-App/1.0',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache',
-                      }
-                      : {
-                        'Accept':
-                            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'NSCA-Daily-App/1.0',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache',
-                      },
-            ),
+          // Solo mostrar WebView cuando el token esté cargado
+          if (_tokenLoaded && _authToken != null)
+            InAppWebView(
+              key: const PageStorageKey('chaplaincyWebView'),
+              initialUrlRequest: URLRequest(
+                url: WebUri('$BASE_URL/chaplain/stages?auth_token=$_authToken'),
+                headers: {
+                  'Authorization': 'Bearer $_authToken',
+                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                  'User-Agent': 'NSCA-Daily-App/1.0',
+                  'Cache-Control': 'no-cache',
+                  'Pragma': 'no-cache',
+                },
+              ),
             initialSettings: InAppWebViewSettings(
               javaScriptEnabled: true,
               domStorageEnabled: true,
@@ -249,11 +242,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
               _controller = controller;
               
               debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
-              if (_authToken != null) {
-                debugPrint('🔐 Autenticación JWT activa');
-              } else {
-                debugPrint('⚠️ Sin autenticación');
-              }
+              debugPrint('🔐 Autenticación JWT activa con token: ${_authToken?.substring(0, 20)}...');
 
               // Agregar JavaScript channel
               _controller!.addJavaScriptHandler(
@@ -318,10 +307,29 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                 action: PermissionResponseAction.GRANT,
               );
             },
-          ),
+          )
+          else if (_tokenLoaded && _authToken == null)
+            // Mostrar error si no hay token
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 64),
+                  const SizedBox(height: 16),
+                  const Text('Authentication Error', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  const Text('Please log in again', style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/auth'),
+                    child: const Text('Go to Login'),
+                  ),
+                ],
+              ),
+            ),
 
           // Indicador de carga
-          if (_isLoading)
+          if (_isLoading || !_tokenLoaded)
             Container(
               color: Colors.white.withValues(alpha: 0.8),
               child: Center(
@@ -330,9 +338,11 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                   children: [
                     CircularProgressIndicator(color: kPrimaryColor),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Loading chaplain certification process...',
-                      style: TextStyle(color: kTextColor),
+                    Text(
+                      !_tokenLoaded 
+                          ? 'Loading authentication...' 
+                          : 'Loading chaplain certification process...',
+                      style: const TextStyle(color: kTextColor),
                     ),
                   ],
                 ),
