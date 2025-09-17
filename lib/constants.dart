@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // const String BASE_URL = 'https://www.nscaacademy.org';
-const String BASE_URL = 'http://10.10.10.199/nsca-lms';
+const String BASE_URL = 'http://10.10.10.195/nsca-lms';
 
 // list of colors that we use in our app
 const kBackgroundColor = Color(0xFFF5F9FA);
