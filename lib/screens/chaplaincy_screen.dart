@@ -18,14 +18,14 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
   InAppWebViewController? _controller;
   bool _isLoading = true;
   String? _authToken;
-  String? _chaplaincyUrl;
 
   @override
   void initState() {
     super.initState();
-    _requestPermissions().then((_) {
-      _initializeWebView();
-    });
+    // Cargar token inmediatamente para inicialización más rápida
+    _initializeWebView();
+    // Solicitar permisos en paralelo (no bloquear la carga)
+    _requestPermissions();
   }
 
   Future<void> _requestPermissions() async {
@@ -41,7 +41,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
 
   Future<void> _initializeWebView() async {
     await _getAuthToken();
-    _setupWebView();
   }
 
   Future<void> _getAuthToken() async {
@@ -62,15 +61,6 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
     }
   }
 
-  void _setupWebView() {
-    _chaplaincyUrl = '$BASE_URL/chaplain/stages';
-    debugPrint('🌐 Cargando página de capellanía: $_chaplaincyUrl');
-    if (_authToken != null) {
-      debugPrint('🔐 Autenticación JWT activa');
-    } else {
-      debugPrint('⚠️ Sin autenticación');
-    }
-  }
 
   void _handleJavaScriptMessage(String message) {
     // Manejar mensajes del JavaScript de la página de capellanía
@@ -223,7 +213,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
           InAppWebView(
             key: const PageStorageKey('chaplaincyWebView'),
             initialUrlRequest: URLRequest(
-              url: WebUri('$_chaplaincyUrl'),
+              url: WebUri('$BASE_URL/chaplain/stages'),
               headers:
                   _authToken != null
                       ? {
@@ -257,6 +247,13 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
             ),
             onWebViewCreated: (controller) {
               _controller = controller;
+              
+              debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
+              if (_authToken != null) {
+                debugPrint('🔐 Autenticación JWT activa');
+              } else {
+                debugPrint('⚠️ Sin autenticación');
+              }
 
               // Agregar JavaScript channel
               _controller!.addJavaScriptHandler(
