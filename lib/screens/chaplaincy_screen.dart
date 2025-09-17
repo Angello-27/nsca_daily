@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
   WebViewController? _controller;
   bool _isLoading = true;
   String? _authToken;
+  String? _deviceId;
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
 
   Future<void> _initializeWebView() async {
     await _getAuthToken();
+    await _getDeviceId();
     _setupWebView();
   }
 
@@ -47,10 +50,29 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
     }
   }
 
+  Future<void> _getDeviceId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _deviceId = prefs.getString('chaplain_device_id');
+      
+      if (_deviceId == null || _deviceId!.isEmpty) {
+        _deviceId = 'chaplain_${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(9999)}';
+        await prefs.setString('chaplain_device_id', _deviceId!);
+        debugPrint('🆔 Nuevo Device ID generado: $_deviceId');
+      } else {
+        debugPrint('🆔 Device ID recuperado: $_deviceId');
+      }
+    } catch (e) {
+      debugPrint('Error obteniendo device ID: $e');
+      _deviceId = 'chaplain_fallback_${Random().nextInt(99999)}';
+    }
+  }
+
   void _setupWebView() {
     const chaplaincyUrl = '$BASE_URL/chaplain';
     
     debugPrint('🌐 Cargando página de capellanía: $chaplaincyUrl');
+    debugPrint('🆔 Device ID: $_deviceId');
     if (_authToken != null) {
       debugPrint('🔐 Autenticación JWT activa');
     } else {
@@ -65,11 +87,13 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
         Uri.parse(chaplaincyUrl),
         headers: _authToken != null ? {
           'Authorization': 'Bearer $_authToken',
+          'X-Device-ID': _deviceId ?? 'unknown',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'User-Agent': 'NSCA-Daily-App/1.0',
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache',
         } : {
+          'X-Device-ID': _deviceId ?? 'unknown',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'User-Agent': 'NSCA-Daily-App/1.0',
           'Cache-Control': 'no-cache',
@@ -211,45 +235,67 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen> {
 
 
   Future<void> _injectTokenIntoPage() async {
-    if (_authToken == null || _controller == null) return;
+    if (_authToken == null || _controller == null || _deviceId == null) return;
     
     try {
-      // JavaScript para inyectar el token en localStorage y sessionStorage
+      // JavaScript mejorado para inyectar sesión específica del dispositivo
       final jsCode = '''
         (function() {
-          // Guardar token en localStorage para que la página lo pueda usar
+          // Crear datos de sesión específicos del dispositivo
+          const sessionData = {
+            auth_token: '$_authToken',
+            device_id: '$_deviceId',
+            timestamp: Date.now(),
+            session_type: 'chaplaincy'
+          };
+          
+          // Guardar en localStorage y sessionStorage con clave específica
+          const sessionKey = 'chaplain_session_' + '$_deviceId';
+          localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+          
+          // Mantener compatibilidad con implementación existente
           localStorage.setItem('auth_token', '$_authToken');
           sessionStorage.setItem('auth_token', '$_authToken');
-          
-          // También agregar a window para acceso global
           window.authToken = '$_authToken';
           
-          // Interceptar fetch/XMLHttpRequest para agregar headers automáticamente
+          // Interceptar fetch con headers mejorados
           const originalFetch = window.fetch;
           window.fetch = function(url, options = {}) {
             options.headers = options.headers || {};
             options.headers['Authorization'] = 'Bearer $_authToken';
+            options.headers['X-Device-ID'] = '$_deviceId';
+            options.headers['X-Session-Type'] = 'chaplaincy';
             return originalFetch(url, options);
           };
           
+          // Interceptar XMLHttpRequest con headers mejorados
           const originalXHROpen = XMLHttpRequest.prototype.open;
           XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
             this.addEventListener('readystatechange', function() {
               if (this.readyState === 1) {
                 this.setRequestHeader('Authorization', 'Bearer $_authToken');
+                this.setRequestHeader('X-Device-ID', '$_deviceId');
+                this.setRequestHeader('X-Session-Type', 'chaplaincy');
               }
             });
             return originalXHROpen.apply(this, arguments);
           };
           
-          console.log('🔐 Token JWT inyectado correctamente');
+          // Función global para obtener datos de sesión
+          window.getChaplaincySession = function() {
+            return sessionData;
+          };
+          
+          console.log('🔐 Sesión de capellanía inicializada para dispositivo: $_deviceId');
         })();
       ''';
       
       await _controller!.runJavaScript(jsCode);
+      debugPrint('✅ Sesión inyectada - Device: $_deviceId');
       
     } catch (e) {
-      debugPrint('❌ Error inyectando token: $e');
+      debugPrint('❌ Error inyectando sesión: $e');
     }
   }
 
