@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 
 class ChaplaincyScreen extends StatefulWidget {
@@ -249,6 +250,8 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
               loadWithOverviewMode: true,
               builtInZoomControls: false,
               displayZoomControls: false,
+              // Configuraciones adicionales para enlaces externos
+              javaScriptCanOpenWindowsAutomatically: true,
             ),
             onWebViewCreated: (controller) {
               _controller = controller;
@@ -324,47 +327,87 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
             },
             shouldOverrideUrlLoading: (controller, navigationAction) async {
               final url = navigationAction.request.url.toString();
+              final isMainFrame = navigationAction.isForMainFrame;
+
+              debugPrint('🔍 Navegación detectada: $url (MainFrame: $isMainFrame)');
 
               // Permitir navegación dentro del dominio de la aplicación
               if (url.startsWith('$BASE_URL/')) {
+                debugPrint('✅ Permitiendo navegación interna: $url');
                 return NavigationActionPolicy.ALLOW;
               }
 
-              // Permitir específicamente recursos de Calendly
+              // Permitir específicamente recursos de Calendly (incluso navegación)
               if (url.contains('calendly.com') || 
                   url.contains('assets.calendly.com') ||
-                  url.contains('calendlyassets.com') ||
-                  url.startsWith('https://calendly.com/') ||
-                  url.startsWith('https://assets.calendly.com/')) {
-                debugPrint('✅ Permitiendo recurso de Calendly: $url');
+                  url.contains('calendlyassets.com')) {
+                debugPrint('✅ Permitiendo recurso/navegación de Calendly: $url');
                 return NavigationActionPolicy.ALLOW;
               }
 
-              // Permitir otros recursos externos comunes necesarios para iframes
-              if (url.startsWith('https://') && 
+              // Permitir recursos externos (JS, CSS, fuentes, etc.) - no navegación
+              if (!isMainFrame && url.startsWith('https://') && 
                   (url.contains('.js') || 
                    url.contains('.css') || 
                    url.contains('.woff') || 
                    url.contains('.ttf') ||
+                   url.contains('.png') ||
+                   url.contains('.jpg') ||
+                   url.contains('.svg') ||
                    url.contains('widget') ||
-                   url.contains('embed'))) {
+                   url.contains('embed') ||
+                   url.contains('api'))) {
                 debugPrint('✅ Permitiendo recurso externo: $url');
                 return NavigationActionPolicy.ALLOW;
               }
 
-              // Para navegación de páginas completas externas, abrir en el navegador
-              if (url.startsWith('https://') || url.startsWith('http://')) {
+              // Para enlaces externos que deben abrir en navegador (navegación de frame principal)
+              if (isMainFrame && (url.startsWith('https://') || url.startsWith('http://'))) {
                 debugPrint('🌐 Abriendo en navegador externo: $url');
+                // Abrir en el navegador externo
+                try {
+                  await controller.loadUrl(urlRequest: URLRequest(url: WebUri('about:blank')));
+                  // Usar url_launcher para abrir en navegador externo
+                  final Uri uri = Uri.parse(url);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                } catch (e) {
+                  debugPrint('❌ Error abriendo URL externa: $e');
+                }
                 return NavigationActionPolicy.CANCEL;
               }
 
-              // Bloquear otros tipos de navegación
-              debugPrint('🚫 Bloqueando navegación: $url');
+              // Para otros tipos de navegación externa, permitir
+              if (url.startsWith('https://') || url.startsWith('http://')) {
+                debugPrint('✅ Permitiendo navegación externa: $url');
+                return NavigationActionPolicy.ALLOW;
+              }
+
+              // Bloquear protocolos no web
+              debugPrint('🚫 Bloqueando protocolo no web: $url');
               return NavigationActionPolicy.CANCEL;
             },
-            // ¡ESTA ES LA PARTE CLAVE! Manejo de file uploads
+            // Manejo de ventanas nuevas (enlaces target="_blank")
             onCreateWindow: (controller, createWindowAction) async {
-              return true;
+              final url = createWindowAction.request.url.toString();
+              debugPrint('🪟 Solicitud de nueva ventana: $url');
+              
+              // Si es un enlace externo, abrirlo en el navegador
+              if (url.startsWith('https://') || url.startsWith('http://')) {
+                try {
+                  final Uri uri = Uri.parse(url);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    debugPrint('✅ Enlace externo abierto en navegador: $url');
+                  }
+                } catch (e) {
+                  debugPrint('❌ Error abriendo enlace externo: $e');
+                }
+                return false; // No crear ventana en el WebView
+              }
+              
+              return true; // Permitir crear ventana para otros casos
             },
             onPermissionRequest: (controller, request) async {
               return PermissionResponse(
