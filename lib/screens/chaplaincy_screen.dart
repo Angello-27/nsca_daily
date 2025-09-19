@@ -19,6 +19,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
   bool _isLoading = true;
   bool _tokenLoaded = false; // Nuevo flag
   String? _authToken;
+  final Set<String> _reportedErrors = {}; // Para evitar errores duplicados
 
   @override
   void initState() {
@@ -232,11 +233,22 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
               allowUniversalAccessFromFileURLs: true,
               mediaPlaybackRequiresUserGesture: false,
               allowsInlineMediaPlayback: true,
-              userAgent: 'NSCA-Daily-App/1.0',
-              // Habilitar soporte para file uploads
+              userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
               allowFileAccess: true,
               supportZoom: false,
               useOnLoadResource: true,
+              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+              useShouldOverrideUrlLoading: true,
+              clearCache: false,
+              cacheEnabled: true,
+              transparentBackground: false,
+              thirdPartyCookiesEnabled: true,
+              hardwareAcceleration: true,
+              supportMultipleWindows: true,
+              useWideViewPort: true,
+              loadWithOverviewMode: true,
+              builtInZoomControls: false,
+              displayZoomControls: false,
             ),
             onWebViewCreated: (controller) {
               _controller = controller;
@@ -256,6 +268,9 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
             },
             onLoadStart: (controller, url) {
               setState(() => _isLoading = true);
+              // Limpiar errores reportados al iniciar nueva carga
+              _reportedErrors.clear();
+              
               if (url.toString().contains('/login') ||
                   url.toString().contains('/auth')) {
                 debugPrint(
@@ -280,10 +295,32 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
             },
             onReceivedError: (controller, request, error) {
               setState(() => _isLoading = false);
-              debugPrint(
-                '❌ Error WebView: ${error.type} - ${error.description}',
-              );
-              _showErrorDialog('WebView Error', 'Error: ${error.description}');
+              
+              final errorKey = '${error.type}-${error.description}';
+              final url = request.url.toString();
+              
+              // Filtrar errores comunes de recursos externos que no afectan la funcionalidad
+              if (error.description.contains('ERR_BLOCKED_BY_ORB') ||
+                  error.description.contains('ERR_CONNECTION_REFUSED') ||
+                  error.description.contains('ERR_TIMEOUT') ||
+                  error.description.contains('ERR_NETWORK_CHANGED') ||
+                  error.description.contains('ERR_INTERNET_DISCONNECTED')) {
+                
+                // Solo registrar el error en debug, no mostrar diálogo
+                debugPrint('⚠️ Error de recurso externo (ignorado): ${error.type} - ${error.description} en $url');
+                return;
+              }
+              
+              // Para otros errores más críticos, mostrar solo una vez
+              if (!_reportedErrors.contains(errorKey)) {
+                _reportedErrors.add(errorKey);
+                debugPrint('❌ Error WebView crítico: ${error.type} - ${error.description} en $url');
+                
+                // Solo mostrar diálogo para errores que afecten la página principal
+                if (url.startsWith('$BASE_URL/') || url.isEmpty) {
+                  _showErrorDialog('WebView Error', 'Error loading page: ${error.description}');
+                }
+              }
             },
             shouldOverrideUrlLoading: (controller, navigationAction) async {
               final url = navigationAction.request.url.toString();
@@ -293,8 +330,36 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                 return NavigationActionPolicy.ALLOW;
               }
 
-              // Bloquear navegación externa
-              debugPrint('🚫 Bloqueando navegación externa: $url');
+              // Permitir específicamente recursos de Calendly
+              if (url.contains('calendly.com') || 
+                  url.contains('assets.calendly.com') ||
+                  url.contains('calendlyassets.com') ||
+                  url.startsWith('https://calendly.com/') ||
+                  url.startsWith('https://assets.calendly.com/')) {
+                debugPrint('✅ Permitiendo recurso de Calendly: $url');
+                return NavigationActionPolicy.ALLOW;
+              }
+
+              // Permitir otros recursos externos comunes necesarios para iframes
+              if (url.startsWith('https://') && 
+                  (url.contains('.js') || 
+                   url.contains('.css') || 
+                   url.contains('.woff') || 
+                   url.contains('.ttf') ||
+                   url.contains('widget') ||
+                   url.contains('embed'))) {
+                debugPrint('✅ Permitiendo recurso externo: $url');
+                return NavigationActionPolicy.ALLOW;
+              }
+
+              // Para navegación de páginas completas externas, abrir en el navegador
+              if (url.startsWith('https://') || url.startsWith('http://')) {
+                debugPrint('🌐 Abriendo en navegador externo: $url');
+                return NavigationActionPolicy.CANCEL;
+              }
+
+              // Bloquear otros tipos de navegación
+              debugPrint('🚫 Bloqueando navegación: $url');
               return NavigationActionPolicy.CANCEL;
             },
             // ¡ESTA ES LA PARTE CLAVE! Manejo de file uploads
