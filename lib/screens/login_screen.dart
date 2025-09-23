@@ -85,37 +85,41 @@ class _LoginScreenState extends State<LoginScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              color: kCardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: kBorderColor),
             ),
             child: Column(
               children: [
-                Image.asset(
-                  "assets/images/login_forget.png",
-                  height: MediaQuery.of(context).size.height * .2,
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: kRedColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Image.asset(
+                    "assets/images/login_forget.png",
+                    height: MediaQuery.of(context).size.height * .15,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
                   'No Internet Connection',
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: kTextColor,
                   ),
                 ),
                 const SizedBox(height: 10),
                 const Text(
                   'Please check your Internet connection and try again',
-                  style: TextStyle(fontSize: 16, color: kSecondaryColor),
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: kTextSecondaryColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -128,79 +132,91 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildLoginView(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Imagen en la misma sección
-          Image.asset(
-            'assets/images/login_forget.png',
-            height: MediaQuery.of(context).size.height * .2,
-            fit: BoxFit.contain,
-          ),
-          
-          const SizedBox(height: 30),
-          
-          const Text(
-            'NSCA Academy',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: kTextColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Access Your Account',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: kPrimaryColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Please sign in to access your personalized content and continue your learning journey',
-            style: TextStyle(fontSize: 16, color: kSecondaryColor),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
-
-          // Botón de inicio de sesión mejorado
+          // Header Section
           Container(
             width: double.infinity,
-            height: 60,
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [kPrimaryColor, kStarColor],
-              ),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: kPrimaryColor.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
+              color: kCardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: kBorderColor),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Image.asset(
+                    'assets/images/login_forget.png',
+                    height: MediaQuery.of(context).size.height * .12,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'NSCA Academy',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: kTextColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Access Your Account',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: kPrimaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Please sign in to access your personalized content and continue your learning journey',
+                  style: TextStyle(
+                    fontSize: 16, 
+                    color: kTextSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+
+          // Sign In Button
+          Container(
+            width: double.infinity,
+            height: 56,
+            decoration: BoxDecoration(
+              color: kPrimaryColor,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
+                  HapticFeedback.lightImpact();
                   Navigator.of(context).pushNamed(AuthScreen.routeName);
                 },
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(12),
                 child: const Center(
                   child: Text(
                     'Sign In',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: kBackgroundColor,
                     ),
                   ),
                 ),
@@ -208,16 +224,25 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
 
-          // Elementos decorativos adicionales
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildFeatureItem(Icons.person, 'Personal'),
-              _buildFeatureItem(Icons.lock, 'Secure'),
-              _buildFeatureItem(Icons.school, 'Learning'),
-            ],
+          // Features Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: kCardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: kBorderColor),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildFeatureItem(Icons.person, 'Personal'),
+                _buildFeatureItem(Icons.lock, 'Secure'),
+                _buildFeatureItem(Icons.school, 'Learning'),
+              ],
+            ),
           ),
         ],
       ),
@@ -240,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
           label,
           style: const TextStyle(
             fontSize: 12,
-            color: kSecondaryColor,
+            color: kTextSecondaryColor,
             fontWeight: FontWeight.w500,
           ),
         ),

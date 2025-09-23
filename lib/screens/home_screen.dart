@@ -1,5 +1,4 @@
 // lib/screens/home_screen.dart
-import '../constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
@@ -84,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
               height: MediaQuery.of(context).size.height * .5,
               child: Center(
-                child: CircularProgressIndicator(color: kPrimaryColor),
+                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
               ),
             ),
         ],

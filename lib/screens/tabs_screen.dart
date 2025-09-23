@@ -1,5 +1,4 @@
 import 'dart:convert';
-import '../constants.dart';
 import '../widgets/app_bar.dart';
 //import '../widgets/filter_widget.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +98,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackgroundColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const CustomAppBar(),
       body: _pages[_selectedPageIndex],
       /*floatingActionButton:
@@ -114,39 +113,34 @@ class _TabsScreenState extends State<TabsScreen> {
           onTap: _selectPage,
           items: const [
             BottomNavigationBarItem(
-              backgroundColor: kBackgroundColor,
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              backgroundColor: kBackgroundColor,
               icon: Icon(Icons.verified_user_outlined),
               activeIcon: Icon(Icons.verified_user),
               label: 'Chaplaincy',
             ),
             // BottomNavigationBarItem(
-            //   backgroundColor: kBackgroundColor,
             //   icon: Icon(Icons.school_outlined),
             //   activeIcon: Icon(Icons.school),
             //   label: 'Curriculum',
             // ),
             BottomNavigationBarItem(
-              backgroundColor: kBackgroundColor,
               icon: Icon(Icons.aod_outlined),
               activeIcon: Icon(Icons.aod_rounded),
               label: 'Daily report',
             ),
             BottomNavigationBarItem(
-              backgroundColor: kBackgroundColor,
               icon: Icon(Icons.account_circle_outlined),
               activeIcon: Icon(Icons.account_circle),
               label: 'Account',
             ),
           ],
-        backgroundColor: Colors.white,
-        unselectedItemColor: kSecondaryColor,
-        selectedItemColor: kSelectItemColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         currentIndex: _selectedPageIndex,
         type: BottomNavigationBarType.fixed,
       ),

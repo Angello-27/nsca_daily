@@ -210,7 +210,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
   Widget build(BuildContext context) {
     super.build(context); // Añade esto si usas AutomaticKeepAliveClientMixin
     return Scaffold(
-      backgroundColor: kBackgroundColor,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
           // Solo mostrar WebView cuando el token esté cargado
@@ -444,13 +444,13 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: kPrimaryColor),
+                    CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
                     const SizedBox(height: 16),
                     Text(
                       !_tokenLoaded 
                           ? 'Loading authentication...' 
                           : 'Loading chaplain certification process...',
-                      style: const TextStyle(color: kTextColor),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     ),
                   ],
                 ),
