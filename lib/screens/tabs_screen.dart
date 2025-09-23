@@ -3,6 +3,7 @@ import '../widgets/app_bar.dart';
 //import '../widgets/filter_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants.dart';
 import 'account_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
@@ -98,7 +99,7 @@ class _TabsScreenState extends State<TabsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: kBackgroundColor,
       appBar: const CustomAppBar(),
       body: _pages[_selectedPageIndex],
       /*floatingActionButton:
@@ -138,9 +139,9 @@ class _TabsScreenState extends State<TabsScreen> {
               label: 'Account',
             ),
           ],
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-        selectedItemColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: kBackgroundColor,
+        unselectedItemColor: kTextSecondaryColor,
+        selectedItemColor: kPrimaryColor,
         currentIndex: _selectedPageIndex,
         type: BottomNavigationBarType.fixed,
       ),

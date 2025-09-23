@@ -1,6 +1,7 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import '../constants.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,48 +46,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: refreshList,
-      child: Stack(
-        children: [
-          // El WebView ocupa todo el espacio
-          InAppWebView(
-            initialUrlRequest: URLRequest(
-              url: WebUri('https://www.nationalschoolchaplainassociation.org/blog'),
-            ),
-            initialSettings: InAppWebViewSettings(
-              javaScriptEnabled: true,
-              allowFileAccess: true,
-              domStorageEnabled: true,
-            ),
-            onWebViewCreated: (controller) {
-              _controller = controller;
-            },
-            onLoadStart: (controller, url) {
-              setState(() => _isLoading = true);
-            },
-            onLoadStop: (controller, url) {
-              setState(() => _isLoading = false);
-            },
-            shouldOverrideUrlLoading: (controller, navigationAction) async {
-              final url = navigationAction.request.url.toString();
-              
-              // Opcional: bloquear redirecciones fuera del dominio
-              if (!url.startsWith('https://www.nationalschoolchaplainassociation.org')) {
-                return NavigationActionPolicy.CANCEL;
-              }
-              return NavigationActionPolicy.ALLOW;
-            },
-          ),
-          // Mientras carga, mostramos un indicador
-          if (_isLoading)
-            SizedBox(
-              height: MediaQuery.of(context).size.height * .5,
-              child: Center(
-                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: RefreshIndicator(
+        onRefresh: refreshList,
+        color: kPrimaryColor,
+        backgroundColor: kCardColor,
+        child: Stack(
+          children: [
+            // El WebView ocupa todo el espacio
+            InAppWebView(
+              initialUrlRequest: URLRequest(
+                url: WebUri('https://www.nationalschoolchaplainassociation.org/blog'),
               ),
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                allowFileAccess: true,
+                domStorageEnabled: true,
+              ),
+              onWebViewCreated: (controller) {
+                _controller = controller;
+              },
+              onLoadStart: (controller, url) {
+                setState(() => _isLoading = true);
+              },
+              onLoadStop: (controller, url) {
+                setState(() => _isLoading = false);
+              },
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                final url = navigationAction.request.url.toString();
+                
+                // Opcional: bloquear redirecciones fuera del dominio
+                if (!url.startsWith('https://www.nationalschoolchaplainassociation.org')) {
+                  return NavigationActionPolicy.CANCEL;
+                }
+                return NavigationActionPolicy.ALLOW;
+              },
             ),
-        ],
+            // Mientras carga, mostramos un indicador
+            if (_isLoading)
+              Container(
+                color: kBackgroundColor.withOpacity(0.8),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * .5,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: kPrimaryColor,
+                      backgroundColor: kCardColor,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

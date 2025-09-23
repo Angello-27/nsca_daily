@@ -76,8 +76,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 0,
-      iconTheme: IconThemeData(
-        color: Theme.of(context).colorScheme.onSurface,
+      iconTheme: const IconThemeData(
+        color: kTextColor,
       ),
       leading: StreamBuilder<AppLogo>(
         stream: _controller.stream,
@@ -117,10 +117,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   onFieldSubmitted: _handleSubmitted,
                 ),
               ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: kBackgroundColor,
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurface),
+          icon: const Icon(Icons.search, color: kTextColor),
           onPressed: () => _showSearchModal(context),
         ),
       ],

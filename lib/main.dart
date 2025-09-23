@@ -84,9 +84,24 @@ class MyApp extends StatelessWidget {
               title: 'Academy App',
               theme: ThemeData(
                 fontFamily: 'google_sans',
-                colorScheme: const ColorScheme.light(primary: kDarkButtonBg),
-                // colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple)
-                //     .copyWith(secondary: kDarkButtonBg),
+                colorScheme: const ColorScheme.dark(
+                  primary: kPrimaryColor,
+                  secondary: kPrimaryColor,
+                  surface: kBackgroundColor,
+                  onSurface: kTextColor,
+                  onPrimary: kBackgroundColor,
+                ),
+                scaffoldBackgroundColor: kBackgroundColor,
+                appBarTheme: const AppBarTheme(
+                  backgroundColor: kBackgroundColor,
+                  foregroundColor: kTextColor,
+                  elevation: 0,
+                ),
+                bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                  backgroundColor: kBackgroundColor,
+                  selectedItemColor: kPrimaryColor,
+                  unselectedItemColor: kTextSecondaryColor,
+                ),
               ),
               debugShowCheckedModeBanner: false,
               home: const SplashScreen(),

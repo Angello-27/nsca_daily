@@ -68,23 +68,24 @@ class _LoginScreenState extends State<LoginScreen> {
         _connectionStatus.isNotEmpty &&
         _connectionStatus.first != ConnectivityResult.none;
 
-    return SingleChildScrollView(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child:
-            !hasConnection
-                ? _buildNoConnectionView(context)
-                : _buildLoginView(context),
-      ),
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: !hasConnection
+          ? _buildNoConnectionView(context)
+          : _buildLoginView(context),
     );
   }
 
   Widget _buildNoConnectionView(BuildContext context) {
-    return Center(
+    return SizedBox(
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: kCardColor,
@@ -92,6 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
               border: Border.all(color: kBorderColor),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -101,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Image.asset(
                     "assets/images/login_forget.png",
-                    height: MediaQuery.of(context).size.height * .15,
+                    height: MediaQuery.of(context).size.height * .12,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -112,6 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontWeight: FontWeight.w600,
                     color: kTextColor,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
                 const Text(
@@ -131,11 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginView(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
           // Header Section
           Container(
             width: double.infinity,
@@ -245,6 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
