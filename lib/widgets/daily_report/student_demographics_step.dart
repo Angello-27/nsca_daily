@@ -53,30 +53,48 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Muestra el límite total de alumnos
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            'Maximum Students Allowed: $maxTotal',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kCardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, color: kPrimaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Maximum Students Allowed: $maxTotal',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600, 
+                  fontSize: 16,
+                  color: kTextColor,
+                ),
+              ),
+            ],
           ),
         ),
+
+        const SizedBox(height: 20),
 
         // Male Students
         DropdownButtonFormField<int?>(
           decoration: InputDecoration(
             labelText: 'Male Students',
+            labelStyle: const TextStyle(color: kTextSecondaryColor),
             border: kDefaultInputBorder,
             focusedBorder: kDefaultFocusInputBorder,
             filled: true,
-            fillColor: Colors.white70,
+            fillColor: kCardColor,
           ),
           initialValue: prov.studentsMale,
           items: [
-            const DropdownMenuItem<int?>(value: null, child: Text('None')),
+            const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: kTextColor))),
             ...List.generate(
               maxMale,
               (i) => i + 1,
-            ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
+            ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor)))),
           ],
           onChanged: prov.setStudentsMale,
           validator: (_) {
@@ -93,18 +111,19 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
         DropdownButtonFormField<int?>(
           decoration: InputDecoration(
             labelText: 'Female Students',
+            labelStyle: const TextStyle(color: kTextSecondaryColor),
             border: kDefaultInputBorder,
             focusedBorder: kDefaultFocusInputBorder,
             filled: true,
-            fillColor: Colors.white70,
+            fillColor: kCardColor,
           ),
           initialValue: prov.studentsFemale,
           items: [
-            const DropdownMenuItem<int?>(value: null, child: Text('None')),
+            const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: kTextColor))),
             ...List.generate(
               maxFemale,
               (i) => i + 1,
-            ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
+            ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor)))),
           ],
           onChanged: prov.setStudentsFemale,
           validator: (_) {
@@ -121,12 +140,14 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
         TextFormField(
           controller: _totalController,
           readOnly: true,
+          style: const TextStyle(color: kTextColor),
           decoration: InputDecoration(
             labelText: 'Total Students',
+            labelStyle: const TextStyle(color: kTextSecondaryColor),
             border: kDefaultInputBorder,
             focusedBorder: kDefaultFocusInputBorder,
             filled: true,
-            fillColor: Colors.white70,
+            fillColor: kCardColor,
           ),
         ),
 
@@ -136,15 +157,16 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
         DropdownButtonFormField<String?>(
           decoration: InputDecoration(
             labelText: 'Average Age',
+            labelStyle: const TextStyle(color: kTextSecondaryColor),
             border: kDefaultInputBorder,
             focusedBorder: kDefaultFocusInputBorder,
             filled: true,
-            fillColor: Colors.white70,
+            fillColor: kCardColor,
           ),
           items:
               getAgeGroups().entries
                   .map(
-                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value, style: const TextStyle(color: kTextColor))),
                   )
                   .toList(),
           initialValue: prov.averageAge,

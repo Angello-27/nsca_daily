@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/daily_report.dart';
 import '../widgets/daily_report/daily_report_stepper.dart';
+import '../constants.dart';
 
 class DailyReportScreen extends StatelessWidget {
   const DailyReportScreen({super.key});
@@ -13,7 +14,7 @@ class DailyReportScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => DailyReportProvider(),
       child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: kBackgroundColor,
         body: DailyReportStepper(),
       ),
     );

@@ -137,32 +137,49 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Si tienes un JSON de Lottie en assets:
-                Lottie.asset(
-                  'assets/images/success.json',
-                  width: 120,
-                  repeat: false,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Your daily report was submitted successfully!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
+      builder: (_) => AlertDialog(
+        backgroundColor: kCardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              'assets/images/success.json',
+              width: 120,
+              repeat: false,
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
+            const SizedBox(height: 16),
+            const Text(
+              'Your daily report was submitted successfully!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16, 
+                fontWeight: FontWeight.w600,
+                color: kTextColor,
               ),
-            ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              backgroundColor: kPrimaryColor,
+              foregroundColor: kBackgroundColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text(
+              'OK',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
+        ],
+      ),
     );
   }
 
@@ -170,16 +187,18 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
     return MaterialButton(
       onPressed: details.onStepContinue,
       color: kPrimaryColor,
-      textColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-      splashColor: kStarColor,
+      textColor: kBackgroundColor,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      splashColor: kPrimaryColor.withValues(alpha: 0.8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(7.0),
-        side: const BorderSide(color: kPrimaryColor),
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: Text(
-        isLast ? 'Submit' : 'Next',
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        isLast ? 'Submit Report' : 'Continue',
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
       ),
     );
   }
@@ -187,15 +206,21 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
   Widget _buildBackButton(ControlsDetails details) {
     return MaterialButton(
       onPressed: details.onStepCancel,
-      color: kSectionTileColor,
-      textColor: Colors.black,
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-      splashColor: kDarkGreyColor,
+      color: kCardColor,
+      textColor: kTextColor,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      splashColor: kTextSecondaryColor.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(7.0),
-        side: const BorderSide(color: kSectionTileColor),
+        borderRadius: BorderRadius.circular(12.0),
+        side: const BorderSide(color: kBorderColor),
       ),
-      child: const Text('Back', style: TextStyle(fontWeight: FontWeight.bold)),
+      child: const Text(
+        'Back', 
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
     );
   }
 

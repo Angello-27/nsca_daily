@@ -18,9 +18,26 @@ class TimeAllocationStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Time Allocation (%)',
-          style: TextStyle(fontWeight: FontWeight.w600),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kCardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.schedule, color: kPrimaryColor, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Time Allocation (%)',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: kTextColor,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -33,18 +50,19 @@ class TimeAllocationStep extends StatelessWidget {
             DropdownButtonFormField<int?>(
               decoration: InputDecoration(
                 labelText: label,
+                labelStyle: const TextStyle(color: kTextSecondaryColor),
                 border: kDefaultInputBorder,
                 focusedBorder: kDefaultFocusInputBorder,
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: kCardColor,
               ),
               initialValue: current,
               items: [
-                const DropdownMenuItem<int?>(value: null, child: Text('None')),
+                const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: kTextColor))),
                 ...List.generate(
                   100,
                   (i) => 100 - i,
-                ).map((v) => DropdownMenuItem(value: v, child: Text('$v'))),
+                ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor)))),
               ],
               onChanged: (v) {
                 prov.setPercentage(key, v ?? 0);

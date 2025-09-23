@@ -19,11 +19,26 @@ class StudentEthnicStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Muestra el total de estudiantes
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            'Total Students: $total',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: kCardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: kBorderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.people_outline, color: kPrimaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Total Students: $total',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600, 
+                  fontSize: 16,
+                  color: kTextColor,
+                ),
+              ),
+            ],
           ),
         ),
 
@@ -46,15 +61,16 @@ class StudentEthnicStep extends StatelessWidget {
             child: DropdownButtonFormField<int>(
               decoration: InputDecoration(
                 labelText: label,
+                labelStyle: const TextStyle(color: kTextSecondaryColor),
                 border: kDefaultInputBorder,
                 focusedBorder: kDefaultFocusInputBorder,
                 filled: true,
-                fillColor: Colors.white70,
+                fillColor: kCardColor,
               ),
               initialValue: current <= maxForThis ? current : 0,
               items:
                   List.generate(maxForThis + 1, (i) => i)
-                      .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
+                      .map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor))))
                       .toList(),
               onChanged: (v) {
                 // Actualiza el provider
