@@ -25,21 +25,11 @@ class AccountScreen extends StatefulWidget {
   _AccountScreenState createState() => _AccountScreenState();
 }
 
-class _AccountScreenState extends State<AccountScreen>
-    with TickerProviderStateMixin {
+class _AccountScreenState extends State<AccountScreen> {
   List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   final Connectivity _connectivity = Connectivity();
   dynamic courseAccessibility;
-
-  // Animation controllers
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late AnimationController _scaleController;
-
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
 
   systemSettings() async {
     var url = "$BASE_URL/api/system_settings";
@@ -93,39 +83,6 @@ class _AccountScreenState extends State<AccountScreen>
     super.initState();
     initConnectivity();
 
-    // Initialize animation controllers
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    // Initialize animations
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
-    );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
-    );
-
-    // Start animations
-    _fadeController.forward();
-    _slideController.forward();
-    _scaleController.forward();
-
     // onConnectivityChanged emite List<ConnectivityResult>
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       _updateConnectionStatus,
@@ -169,69 +126,54 @@ class _AccountScreenState extends State<AccountScreen>
     required VoidCallback onTap,
     Color? iconColor,
   }) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onTap();
-              },
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: (iconColor ?? kPrimaryColor).withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: iconColor ?? kPrimaryColor,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: kTextColor,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      color: kSecondaryColor.withValues(alpha: 0.6),
-                      size: 16,
-                    ),
-                  ],
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: kCardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorderColor),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: (iconColor ?? kPrimaryColor).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor ?? kPrimaryColor,
+                    size: 24,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: kTextColor,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: kTextSecondaryColor,
+                  size: 16,
+                ),
+              ],
             ),
           ),
         ),
@@ -241,9 +183,6 @@ class _AccountScreenState extends State<AccountScreen>
 
   @override
   void dispose() {
-    _fadeController.dispose();
-    _slideController.dispose();
-    _scaleController.dispose();
     _connectivitySubscription.cancel();
     super.dispose();
   }
@@ -335,104 +274,60 @@ class _AccountScreenState extends State<AccountScreen>
               builder: (context, authData, child) {
                 final user = authData.user;
                 return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      // Header con gradiente y avatar mejorado
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * .35,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  kPrimaryColor.withValues(alpha: 0.1),
-                                  kBackgroundColor,
-                                ],
+                      const SizedBox(height: 20),
+                      
+                      // Profile Header Section
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: kCardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: kBorderColor),
+                        ),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundImage: NetworkImage(
+                                user.image.toString(),
+                              ),
+                              backgroundColor: kLightBlueColor,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              '${user.firstName} ${user.lastName}',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: kTextColor,
                               ),
                             ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Avatar con animación de escala
-                                  ScaleTransition(
-                                    scale: _scaleAnimation,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            kPrimaryColor.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                            kStarColor.withValues(alpha: 0.2),
-                                          ],
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: kPrimaryColor.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
-                                          ),
-                                        ],
-                                      ),
-                                      child: CircleAvatar(
-                                        radius: 50,
-                                        backgroundImage: NetworkImage(
-                                          user.image.toString(),
-                                        ),
-                                        backgroundColor: kLightBlueColor,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    '${user.firstName} ${user.lastName}',
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: kTextColor,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Manage your account settings',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: kSecondaryColor.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Manage your account settings',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: kTextSecondaryColor,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
-                      // Cards modernas con animaciones
+                      // Account Options
                       _buildModernCard(
                         title: 'View Profile',
                         icon: Icons.account_circle_outlined,
                         iconColor: kPrimaryColor,
                         onTap: () {
-                          Navigator.of(
-                            context,
-                          ).pushNamed(EditProfileScreen.routeName);
+                          Navigator.of(context).pushNamed(EditProfileScreen.routeName);
                         },
                       ),
 
@@ -441,9 +336,7 @@ class _AccountScreenState extends State<AccountScreen>
                         icon: Icons.lock_outline,
                         iconColor: kBlueColor,
                         onTap: () {
-                          Navigator.of(
-                            context,
-                          ).pushNamed(EditPasswordScreen.routeName);
+                          Navigator.of(context).pushNamed(EditPasswordScreen.routeName);
                         },
                       ),
 
@@ -455,103 +348,78 @@ class _AccountScreenState extends State<AccountScreen>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (context) => const DownloadedCourseList(),
+                              builder: (context) => const DownloadedCourseList(),
                             ),
                           );
                         },
                       ),
 
-                      // Botón de Logout con diseño especial
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  kRedColor.withValues(alpha: 0.1),
-                                  kRedColor.withValues(alpha: 0.05),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: kRedColor.withValues(alpha: 0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () async {
-                                  HapticFeedback.mediumImpact();
-                                  final navigator = Navigator.of(context);
-                                  await Provider.of<Auth>(
-                                    context,
-                                    listen: false,
-                                  ).logout();
-                                  if (mounted) {
-                                    if (courseAccessibility == 'publicly') {
-                                      navigator.pushNamedAndRemoveUntil(
-                                        '/home',
-                                        (r) => false,
-                                      );
-                                    } else {
-                                      navigator.pushNamedAndRemoveUntil(
-                                        '/auth-private',
-                                        (r) => false,
-                                      );
-                                    }
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(20),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: kRedColor.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.logout_outlined,
-                                          color: kRedColor,
-                                          size: 24,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      const Expanded(
-                                        child: Text(
-                                          'Log Out',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: kRedColor,
-                                            letterSpacing: 0.3,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_forward_ios,
-                                        color: kRedColor.withValues(alpha: 0.6),
-                                        size: 16,
-                                      ),
-                                    ],
+                      // Logout Button
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: kCardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: kBorderColor),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              HapticFeedback.mediumImpact();
+                              final navigator = Navigator.of(context);
+                              await Provider.of<Auth>(
+                                context,
+                                listen: false,
+                              ).logout();
+                              if (mounted) {
+                                if (courseAccessibility == 'publicly') {
+                                  navigator.pushNamedAndRemoveUntil(
+                                    '/home',
+                                    (r) => false,
+                                  );
+                                } else {
+                                  navigator.pushNamedAndRemoveUntil(
+                                    '/auth-private',
+                                    (r) => false,
+                                  );
+                                }
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: kRedColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.logout_outlined,
+                                      color: kRedColor,
+                                      size: 24,
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(width: 16),
+                                  const Expanded(
+                                    child: Text(
+                                      'Log Out',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: kRedColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: kTextSecondaryColor,
+                                    size: 16,
+                                  ),
+                                ],
                               ),
                             ),
                           ),

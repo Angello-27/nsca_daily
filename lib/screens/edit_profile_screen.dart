@@ -2,10 +2,10 @@
 
 import '../constants.dart';
 import '../providers/auth.dart';
-import '../widgets/app_bar_two.dart';
 import '../widgets/user_image_picker.dart';
+import '../models/user.dart';
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -28,7 +28,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     'validity': '',
     'device_verification': '',
     'token': '',
-    'bio': '',
     'twitter': '',
     'facebook': '',
     'linkedin': '',
@@ -36,310 +35,518 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
 
   InputDecoration getInputDecoration(String hintext, IconData iconData) {
     return InputDecoration(
-      enabledBorder: kDefaultInputBorder,
-      focusedBorder: kDefaultFocusInputBorder,
-      focusedErrorBorder: kDefaultFocusErrorBorder,
-      errorBorder: kDefaultFocusErrorBorder,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        borderSide: BorderSide(
+          color: Colors.grey.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        borderSide: BorderSide(color: kPrimaryColor, width: 2.5),
+      ),
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        borderSide: const BorderSide(color: kRedColor, width: 2.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.0),
+        borderSide: const BorderSide(color: kRedColor, width: 1.5),
+      ),
       filled: true,
-      hintStyle: const TextStyle(color: kFormInputColor),
+      prefixIcon: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: kPrimaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(iconData, color: kPrimaryColor, size: 20),
+      ),
+      hintStyle: TextStyle(
+        color: Colors.grey.withValues(alpha: 0.7),
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+      ),
       hintText: hintext,
-      fillColor: Colors.white70,
-      prefixIcon: Icon(iconData, color: kFormInputColor),
-      contentPadding: const EdgeInsets.symmetric(vertical: 5),
+      fillColor: Colors.grey.withValues(alpha: 0.03),
+      contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+      errorStyle: const TextStyle(
+        color: kRedColor,
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+      ),
     );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      HapticFeedback.lightImpact();
+      return;
+    }
+    _formKey.currentState!.save();
+
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = Provider.of<Auth>(context, listen: false).user;
+      final updatedUser = User(
+        userId: user.userId,
+        firstName: _userData['first_name']!,
+        lastName: _userData['last_name']!,
+        email: user.email,
+        role: user.role,
+        validity: user.validity,
+        deviceVerification: user.deviceVerification,
+        token: user.token,
+        image: user.image,
+        facebook: _userData['facebook']!,
+        twitter: _userData['twitter']!,
+        linkedIn: _userData['linkedin']!,
+        biography: user.biography,
+      );
+
+      await Provider.of<Auth>(
+        context,
+        listen: false,
+      ).updateUserData(updatedUser);
+
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile updated successfully!'),
+          backgroundColor: kGreenColor,
+        ),
+      );
+
+      Navigator.of(context).pop();
+    } catch (error) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile: $error'),
+          backgroundColor: kRedColor,
+        ),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBarTwo(),
       backgroundColor: kBackgroundColor,
+      appBar: AppBar(
+        elevation: 0,
+        iconTheme: const IconThemeData(color: kTextColor),
+        backgroundColor: kBackgroundColor,
+        title: const Text(
+          'Edit Profile',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: kTextColor,
+          ),
+        ),
+      ),
       body: FutureBuilder(
         future: Provider.of<Auth>(context, listen: false).getUserInfo(),
         builder: (ctx, dataSnapshot) {
           if (dataSnapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
-                color: kPrimaryColor.withValues(alpha: 0.7),
+                color: kPrimaryColor,
               ),
             );
           } else {
             if (dataSnapshot.error != null) {
-              return const Center(child: Text('Error Occured'));
+              return const Center(child: Text('Error Occurred'));
             } else {
               return Consumer<Auth>(
                 builder: (context, authData, child) {
                   final user = authData.user;
                   return SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.only(
-                            left: 15,
-                            top: 10,
-                            bottom: 5.0,
+                        const SizedBox(height: 20),
+                        
+                        // Profile Picture Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: kCardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: kBorderColor),
                           ),
-                          child: Text(
-                            'Update Profile Picture',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w400,
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Profile Picture',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: kTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              UserImagePicker(image: user.image),
+                            ],
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Personal Information Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: kCardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: kBorderColor),
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Personal Information',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: kTextColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                
+                                // First Name
+                                TextFormField(
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: kTextColor,
+                                  ),
+                                  initialValue: user.firstName,
+                                  decoration: InputDecoration(
+                                    labelText: 'First Name',
+                                    labelStyle: const TextStyle(
+                                      color: kTextSecondaryColor,
+                                      fontSize: 14,
+                                    ),
+                                    hintText: 'Enter your first name',
+                                    hintStyle: const TextStyle(
+                                      color: kTextSecondaryColor,
+                                    ),
+                                    filled: true,
+                                    fillColor: kBackgroundColor,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kBorderColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kBorderColor),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.name,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'First name cannot be empty';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    _userData['first_name'] = value.toString();
+                                    _firstNameController.text = value as String;
+                                  },
+                                ),
+                                
+                                const SizedBox(height: 20),
+                                
+                                // Last Name
+                                TextFormField(
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: kTextColor,
+                                  ),
+                                  initialValue: user.lastName,
+                                  decoration: InputDecoration(
+                                    labelText: 'Last Name',
+                                    labelStyle: const TextStyle(
+                                      color: kTextSecondaryColor,
+                                      fontSize: 14,
+                                    ),
+                                    hintText: 'Enter your last name',
+                                    hintStyle: const TextStyle(
+                                      color: kTextSecondaryColor,
+                                    ),
+                                    filled: true,
+                                    fillColor: kBackgroundColor,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kBorderColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kBorderColor),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 16,
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.name,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (value) {
+                                    if (value!.isEmpty) {
+                                      return 'Last name cannot be empty';
+                                    }
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    _userData['last_name'] = value.toString();
+                                    _lastNameController.text = value as String;
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Social Links Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: kCardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: kBorderColor),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Social Links',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: kTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              
+                              // Facebook Link
+                              TextFormField(
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: kTextColor,
+                                ),
+                                initialValue: user.facebook,
+                                decoration: InputDecoration(
+                                  labelText: 'Facebook',
+                                  labelStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                    fontSize: 14,
+                                  ),
+                                  hintText: 'Enter your Facebook profile URL',
+                                  hintStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                  ),
+                                  filled: true,
+                                  fillColor: kBackgroundColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.url,
+                                textInputAction: TextInputAction.next,
+                                onSaved: (value) {
+                                  _userData['facebook'] = value.toString();
+                                },
+                              ),
+                              
+                              const SizedBox(height: 20),
+                              
+                              // Twitter Link
+                              TextFormField(
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: kTextColor,
+                                ),
+                                initialValue: user.twitter,
+                                decoration: InputDecoration(
+                                  labelText: 'Twitter',
+                                  labelStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                    fontSize: 14,
+                                  ),
+                                  hintText: 'Enter your Twitter profile URL',
+                                  hintStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                  ),
+                                  filled: true,
+                                  fillColor: kBackgroundColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.url,
+                                textInputAction: TextInputAction.next,
+                                onSaved: (value) {
+                                  _userData['twitter'] = value.toString();
+                                },
+                              ),
+                              
+                              const SizedBox(height: 20),
+                              
+                              // LinkedIn Link
+                              TextFormField(
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: kTextColor,
+                                ),
+                                initialValue: user.linkedIn,
+                                decoration: InputDecoration(
+                                  labelText: 'LinkedIn',
+                                  labelStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                    fontSize: 14,
+                                  ),
+                                  hintText: 'Enter your LinkedIn profile URL',
+                                  hintStyle: const TextStyle(
+                                    color: kTextSecondaryColor,
+                                  ),
+                                  filled: true,
+                                  fillColor: kBackgroundColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kBorderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.url,
+                                textInputAction: TextInputAction.done,
+                                onSaved: (value) {
+                                  _userData['linkedin'] = value.toString();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Update Button
                         SizedBox(
                           width: double.infinity,
-                          child: UserImagePicker(image: user.image),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(10.0),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 0.0,
-                                        bottom: 5.0,
-                                      ),
-                                      child: Text(
-                                        'First Name',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                      top: 0.0,
-                                      bottom: 8.0,
-                                    ),
-                                    child: TextFormField(
-                                      style: const TextStyle(fontSize: 14),
-                                      initialValue: user.firstName,
-                                      decoration: getInputDecoration(
-                                        'First Name',
-                                        Icons.person,
-                                      ),
-                                      keyboardType: TextInputType.name,
-                                      // controller: _firstNameController,
-                                      // ignore: missing_return
-                                      validator: (value) {
-                                        if (value!.isEmpty) {
-                                          return 'First name cannot be empty';
-                                        }
-                                        return null;
-                                      },
-                                      onSaved: (value) {
-                                        _userData['first_name'] =
-                                            value.toString();
-                                        _firstNameController.text =
-                                            value as String;
-                                      },
-                                    ),
-                                  ),
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 5.0),
-                                      child: Text(
-                                        'Last Name',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: TextFormField(
-                                      style: const TextStyle(fontSize: 14),
-                                      initialValue: user.lastName,
-                                      decoration: getInputDecoration(
-                                        'Last Name',
-                                        Icons.person,
-                                      ),
-                                      keyboardType: TextInputType.name,
-                                      // controller: _lastNameController,
-                                      // ignore: missing_return
-                                      validator: (value) {
-                                        if (value!.isEmpty) {
-                                          return 'Last name cannot be empty';
-                                        }
-                                        return null;
-                                      },
-                                      onSaved: (value) {
-                                        _userData['last_name'] =
-                                            value.toString();
-                                        _lastNameController.text =
-                                            value as String;
-                                      },
-                                    ),
-                                  ),
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 5.0),
-                                      child: Text(
-                                        'Biography',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  TextFormField(
-                                    style: const TextStyle(fontSize: 16),
-                                    initialValue: user.biography,
-                                    decoration: getInputDecoration(
-                                      'Biography',
-                                      Icons.edit,
-                                    ),
-                                    keyboardType: TextInputType.multiline,
-                                    maxLines: 5,
-                                    onSaved: (value) {
-                                      _userData['bio'] = value.toString();
-                                    },
-                                  ),
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 5.0),
-                                      child: Text(
-                                        'Facebook Link',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  TextFormField(
-                                    style: const TextStyle(fontSize: 16),
-                                    initialValue: user.facebook,
-                                    decoration: getInputDecoration(
-                                      'Facebook Link',
-                                      MdiIcons.facebook,
-                                    ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    onSaved: (value) {
-                                      _userData['facebook'] = value.toString();
-                                    },
-                                  ),
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 5.0),
-                                      child: Text(
-                                        'Twitter Link',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  TextFormField(
-                                    style: const TextStyle(fontSize: 16),
-                                    initialValue: user.twitter,
-                                    decoration: getInputDecoration(
-                                      'Twitter Link',
-                                      MdiIcons.twitter,
-                                    ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    onSaved: (value) {
-                                      _userData['twitter'] = value.toString();
-                                    },
-                                  ),
-                                  const Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(bottom: 5.0),
-                                      child: Text(
-                                        'LinkedIn Link',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  TextFormField(
-                                    style: const TextStyle(fontSize: 16),
-                                    initialValue: user.linkedIn,
-                                    decoration: getInputDecoration(
-                                      'LinkedIn Link',
-                                      MdiIcons.linkedin,
-                                    ),
-                                    keyboardType: TextInputType.emailAddress,
-                                    onSaved: (value) {
-                                      _userData['linkedin'] = value.toString();
-                                    },
-                                  ),
-                                  const SizedBox(height: 15),
-                                  /*SizedBox(
-                                    width: double.infinity,
-                                    child:
-                                        _isLoading
-                                            ? const CircularProgressIndicator()
-                                            : MaterialButton(
-                                              onPressed: () {
-                                                _userData['user_id'] =
-                                                    user.userId!;
-                                                _userData['email'] =
-                                                    user.email!;
-                                                _userData['role'] = user.role!;
-                                                _userData['validity'] =
-                                                    user.validity.toString();
-                                                _userData['device_verification'] =
-                                                    user.deviceVerification!;
-                                                _userData['token'] =
-                                                    user.token!;
-                                                _submit();
-                                                // debugPrint(_userData['validity']);
-                                              },
-                                              color: kPrimaryColor,
-                                              textColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 15,
-                                                    vertical: 15,
-                                                  ),
-                                              splashColor: Colors.redAccent,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(7.0),
-                                                side: const BorderSide(
-                                                  color: kPrimaryColor,
-                                                ),
-                                              ),
-                                              child: const Text(
-                                                'Update Now',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                  ),*/
-                                ],
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              foregroundColor: kBackgroundColor,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: kBackgroundColor,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Update Profile',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
+                        
+                        const SizedBox(height: 40),
                       ],
                     ),
                   );

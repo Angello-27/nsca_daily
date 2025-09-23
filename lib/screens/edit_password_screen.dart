@@ -4,9 +4,8 @@ import 'dart:io';
 
 import '../models/common_functions.dart';
 import '../providers/auth.dart';
-import '../widgets/app_bar_two.dart';
-import '../widgets/custom_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../constants.dart';
@@ -33,10 +32,13 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
-      // Invalid!
+      HapticFeedback.lightImpact();
       return;
     }
     _formKey.currentState!.save();
+    
+    HapticFeedback.mediumImpact();
+    
     setState(() {
       _isLoading = true;
     });
@@ -46,12 +48,15 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
         _passwordData['newPassword'].toString(),
       );
 
+      HapticFeedback.heavyImpact();
       CommonFunctions.showSuccessToast('Password updated Successfully');
+      Navigator.of(context).pop();
     } on HttpException {
+      HapticFeedback.heavyImpact();
       var errorMsg = 'Password Update failed';
       CommonFunctions.showErrorDialog(errorMsg, context);
     } catch (error) {
-      // debugPrint(error);
+      HapticFeedback.heavyImpact();
       const errorMsg = 'Password Update failed!';
       CommonFunctions.showErrorDialog(errorMsg, context);
     }
@@ -62,189 +67,275 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
 
   InputDecoration getInputDecoration(String hintext, IconData iconData) {
     return InputDecoration(
-      enabledBorder: kDefaultInputBorder,
-      focusedBorder: kDefaultFocusInputBorder,
-      focusedErrorBorder: kDefaultFocusErrorBorder,
-      errorBorder: kDefaultFocusErrorBorder,
+      labelText: hintext,
+      labelStyle: const TextStyle(
+        color: kTextSecondaryColor,
+        fontSize: 14,
+      ),
+      hintText: 'Enter your $hintext',
+      hintStyle: const TextStyle(
+        color: kTextSecondaryColor,
+      ),
       filled: true,
-      hintStyle: const TextStyle(color: kFormInputColor),
-      hintText: hintext,
-      fillColor: Colors.white70,
-      prefixIcon: Icon(iconData, color: kFormInputColor),
+      fillColor: kBackgroundColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kBorderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kBorderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kRedColor),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kRedColor, width: 2),
+      ),
+      prefixIcon: Icon(iconData, color: kPrimaryColor),
       suffixIcon: IconButton(
         onPressed: () {
           setState(() {
             hidePassword = !hidePassword;
           });
         },
-        color: kTextLowBlackColor,
+        color: kTextSecondaryColor,
         icon: Icon(
           hidePassword
               ? Icons.visibility_off_outlined
               : Icons.visibility_outlined,
         ),
       ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 5),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 16,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBarTwo(),
       backgroundColor: kBackgroundColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 70),
-            const Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Align(
-                alignment: Alignment.center,
-                child: CustomText(
-                  text: 'Update Password',
-                  colors: kTextColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                ),
+      appBar: AppBar(
+        elevation: 0,
+        iconTheme: const IconThemeData(color: kTextColor),
+        backgroundColor: kBackgroundColor,
+        title: const Text(
+          'Change Password',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: kTextColor,
+          ),
+        ),
+      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: kPrimaryColor,
               ),
-            ),
-            _isLoading
-                ? Center(
-                  child: CircularProgressIndicator(
-                    color: kPrimaryColor.withValues(alpha: 0.7),
-                  ),
-                )
-                : Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(10.0),
-                  child: Form(
-                    key: _formKey,
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  
+                  // Header Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: kCardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: kBorderColor),
+                    ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: 5.0),
-                            child: Text(
-                              'Current Password',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                        TextFormField(
-                          style: const TextStyle(fontSize: 16),
-                          decoration: getInputDecoration(
-                            'Current Password',
-                            Icons.vpn_key,
-                          ),
-                          obscureText: hidePassword,
-                          // ignore: missing_return
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Can not be empty';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) {
-                            _passwordData['oldPassword'] = value.toString();
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: 5.0),
-                            child: Text(
-                              'New Password',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                        TextFormField(
-                          style: const TextStyle(fontSize: 16),
-                          decoration: getInputDecoration(
-                            'New Password',
-                            Icons.vpn_key,
-                          ),
-                          obscureText: hidePassword,
-                          controller: _passwordController,
-                          // ignore: missing_return
-                          validator: (value) {
-                            if (value!.isEmpty || value.length < 4) {
-                              return 'Password is too short!';
-                            }
-                            return null;
-                          },
-                          onSaved: (value) {
-                            _passwordData['newPassword'] = value.toString();
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: 5.0),
-                            child: Text(
-                              'Confirm Password',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                        TextFormField(
-                          style: const TextStyle(fontSize: 16),
-                          decoration: getInputDecoration(
-                            'Confirm Password',
-                            Icons.vpn_key,
-                          ),
-                          obscureText: hidePassword,
-                          // ignore: missing_return
-                          validator: (value) {
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 15),
-                        SizedBox(
-                          width: double.infinity,
-                          child: MaterialButton(
-                            onPressed: _submit,
+                          child: const Icon(
+                            Icons.lock_outline,
                             color: kPrimaryColor,
-                            textColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15,
-                              vertical: 15,
-                            ),
-                            splashColor: Colors.redAccent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7.0),
-                              side: const BorderSide(color: kPrimaryColor),
-                            ),
-                            child: const Text(
-                              'Update Now',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Update Password',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            color: kTextColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Change your account password',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: kTextSecondaryColor,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-          ],
-        ),
-      ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Password Form Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: kCardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: kBorderColor),
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Password Information',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: kTextColor,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Current Password
+                          TextFormField(
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: kTextColor,
+                            ),
+                            decoration: getInputDecoration(
+                              'Current Password',
+                              Icons.vpn_key,
+                            ),
+                            obscureText: hidePassword,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Current password cannot be empty';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _passwordData['oldPassword'] = value.toString();
+                            },
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // New Password
+                          TextFormField(
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: kTextColor,
+                            ),
+                            decoration: getInputDecoration(
+                              'New Password',
+                              Icons.vpn_key,
+                            ),
+                            obscureText: hidePassword,
+                            controller: _passwordController,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value!.isEmpty || value.length < 4) {
+                                return 'Password must be at least 4 characters';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _passwordData['newPassword'] = value.toString();
+                            },
+                          ),
+                          
+                          const SizedBox(height: 20),
+                          
+                          // Confirm Password
+                          TextFormField(
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: kTextColor,
+                            ),
+                            decoration: getInputDecoration(
+                              'Confirm Password',
+                              Icons.vpn_key,
+                            ),
+                            obscureText: hidePassword,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.done,
+                            validator: (value) {
+                              if (value != _passwordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
+                          
+                          const SizedBox(height: 32),
+                          
+                          // Update Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kPrimaryColor,
+                                foregroundColor: kBackgroundColor,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: kBackgroundColor,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Update Password',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
     );
   }
 }
