@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
       child: Consumer2<ThemeProvider, Auth>(
         builder: (ctx, themeProvider, auth, _) => MaterialApp(
           // title: 'Cloud Computing Courses and Cyber Security Courses',
-          title: 'Academy App',
+          title: 'NSCA Academy',
           themeMode: themeProvider.themeMode,
           theme: ThemeData(
             fontFamily: 'google_sans',

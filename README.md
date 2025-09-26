@@ -45,6 +45,21 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 - **Acceso rápido** a funciones principales
 - **Notificaciones** y actualizaciones
 
+### 🌐 **WebView Integrado**
+
+- **Home WebView** - Acceso directo al contenido web de NSCA
+- **Chaplain Stage WebView** - Plataforma especializada para capellanes
+- **Navegación web** integrada en la aplicación móvil
+- **Sincronización** entre contenido web y móvil
+
+### 🔐 **Sistema de Autenticación Avanzado**
+
+- **Login/Signup** con validación completa
+- **Registro de nuevos usuarios** con formularios detallados
+- **Perfil de estudiante** personalizable
+- **Gestión de sesiones** segura
+- **Verificación de dispositivo** para mayor seguridad
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### **Frontend**
@@ -74,6 +89,8 @@ NSCA Daily es una aplicación educativa que permite a los capellanes escolares a
 - **Share Plus** - Compartir contenido
 - **Connectivity Plus** - Detección de conectividad
 - **Lottie** - Animaciones
+- **WebView Flutter** - Contenido web integrado
+- **Theme Provider** - Sistema de temas dinámico
 
 ## 📁 Estructura del Proyecto
 
@@ -97,8 +114,17 @@ lib/
 │   ├── tabs_screen.dart   # Navegación por pestañas
 │   ├── auth_screen.dart   # Autenticación
 │   ├── courses_screen.dart # Catálogo de cursos
+│   ├── daily_report_screen.dart # Reportes diarios
+│   ├── chaplaincy_screen.dart # WebView de Chaplain Stage
+│   ├── account_screen.dart # Perfil de usuario
 │   └── ...
 └── widgets/               # Componentes reutilizables
+    ├── daily_report/      # Widgets de reportes diarios
+    │   ├── date_step.dart
+    │   ├── student_demographics_step.dart
+    │   ├── faculty_demographics_step.dart
+    │   └── ...
+    └── ...
 ```
 
 ## 🚀 Instalación y Configuración
@@ -165,15 +191,19 @@ lib/
 - **Navegación intuitiva** con bottom navigation
 - **Responsive design** para diferentes tamaños de pantalla
 - **Modo offline** para contenido descargado
+- **Sistema de temas dinámico** (claro/oscuro/sistema)
+- **WebView integrado** para contenido web
 
 ## 📊 Funcionalidades del Sistema
 
 ### **Autenticación**
 
-- Login/Registro con validación
+- Login/Registro con validación completa
 - Recuperación de contraseña
 - Verificación de dispositivo
 - Gestión de sesiones
+- Perfil de usuario personalizable
+- Sistema de roles y permisos
 
 ### **Cursos**
 
@@ -181,13 +211,23 @@ lib/
 - Filtros y búsqueda
 - Progreso de aprendizaje
 - Certificaciones
+- Descarga offline de contenido
 
-### **Reportes**
+### **Reportes Diarios**
 
-- Formularios de reporte diario
-- Estadísticas detalladas
-- Exportación de datos
-- Historial de reportes
+- Formularios de reporte diario completos
+- Estadísticas detalladas de estudiantes
+- Información de personal docente
+- Registro de crisis y reuniones
+- Análisis de porcentajes por temas
+- Validación de datos en tiempo real
+
+### **WebView Integrado**
+
+- Acceso directo al contenido web de NSCA
+- Navegación web integrada
+- Sincronización entre plataformas
+- Chaplain Stage especializado
 
 ## 🤝 Contribución
 
@@ -223,8 +263,15 @@ Para soporte técnico o consultas sobre la aplicación, contacta a:
 
 ## 🔄 Actualizaciones
 
-- **Versión actual**: 0.1.0
+- **Versión actual**: 1.0.0
 - **Última actualización**: 3 de enero de 2025
+- **Características implementadas**:
+  - ✅ Sistema de temas dinámico (claro/oscuro/sistema)
+  - ✅ WebView integrado para Home y Chaplain Stage
+  - ✅ Sistema completo de reportes diarios
+  - ✅ Autenticación avanzada con registro
+  - ✅ Perfil de usuario personalizable
+  - ✅ Navegación por pestañas mejorada
 - **Próximas características**:
   - Mejoras en la interfaz de usuario
   - Nuevas funcionalidades de reportes
