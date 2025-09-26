@@ -30,9 +30,13 @@ class _UserImagePickerState extends State<UserImagePicker> {
   void _pickImage() async {
     image = await SharedPreferenceHelper().getUserImage();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      _image = File(pickedFile!.path);
-    });
+    
+    // Check if user actually selected an image (didn't cancel)
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
   }
 
   Future<void> _submitImage() async {
@@ -73,12 +77,24 @@ class _UserImagePickerState extends State<UserImagePicker> {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundImage:
-                  _image != null
-                      ? FileImage(_image!)
-                      : NetworkImage(widget.image.toString()) as ImageProvider,
+              backgroundImage: _image != null
+                  ? FileImage(_image!)
+                  : (widget.image != null && widget.image!.isNotEmpty)
+                      ? NetworkImage(widget.image!)
+                      : null,
+              backgroundColor: kLightBlueColor,
               child: Stack(
                 children: [
+                  // Show person icon if no image is available
+                  if (_image == null && (widget.image == null || widget.image!.isEmpty))
+                    const Center(
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: kTextColor,
+                      ),
+                    ),
+                  // Camera button overlay
                   Align(
                     alignment: Alignment.bottomRight,
                     child: SizedBox(

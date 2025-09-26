@@ -143,33 +143,84 @@ class Auth with ChangeNotifier {
   // }
 
   Future<void> getUserInfo() async {
-    // final prefs = await SharedPreferences.getInstance();
-
-    // var userData = (prefs.getString('userData') ?? '');
-    // var response = json.decode(userData);
-    // final authToken = response['token'];
-    // debugPrint(rintresponse['user']);
     final authToken = await SharedPreferenceHelper().getAuthToken();
     var url = '$BASE_URL/api/userdata?auth_token=$authToken';
+    
     try {
-      if (authToken == null) {
-        throw const HttpException('No Auth User');
+      if (authToken == null || authToken.isEmpty) {
+        throw const HttpException('No Auth Token');
       }
+      
       final response = await http.get(Uri.parse(url));
-      final responseData = json.decode(response.body);
-
-      _user.firstName = responseData['first_name'];
-      _user.lastName = responseData['last_name'];
-      _user.email = responseData['email'];
-      _user.image = responseData['image'];
-      _user.facebook = responseData['facebook'];
-      _user.twitter = responseData['twitter'];
-      _user.linkedIn = responseData['linkedin'];
-      _user.biography = responseData['biography'];
-      // debugPrint(rint_user.image);
-      notifyListeners();
+      
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        
+        // Check if the response contains user data
+        if (responseData.containsKey('first_name')) {
+          _user.firstName = responseData['first_name'];
+          _user.lastName = responseData['last_name'];
+          _user.email = responseData['email'];
+          _user.image = responseData['image'];
+          _user.facebook = responseData['facebook'];
+          _user.twitter = responseData['twitter'];
+          _user.linkedIn = responseData['linkedin'];
+          _user.biography = responseData['biography'];
+          
+          notifyListeners();
+        } else {
+          throw const HttpException('Invalid user data received');
+        }
+      } else {
+        throw HttpException('Server error: ${response.statusCode}');
+      }
     } catch (error) {
       rethrow;
+    }
+  }
+
+  /// Load user data from SharedPreferences (cached data)
+  Future<void> loadUserDataFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userData = prefs.getString('userData');
+      
+      if (userData != null && userData.isNotEmpty) {
+        final response = json.decode(userData);
+        final userJson = json.decode(response['user']);
+        
+        // Load cached user data
+        _user.userId = userJson['userId'];
+        _user.firstName = userJson['firstName'];
+        _user.lastName = userJson['lastName'];
+        _user.email = userJson['email'];
+        _user.role = userJson['role'];
+        _user.validity = userJson['validity'];
+        _user.deviceVerification = userJson['deviceVerification'];
+        _user.token = userJson['token'];
+        _user.image = userJson['image'];
+        _user.facebook = userJson['facebook'];
+        _user.twitter = userJson['twitter'];
+        _user.linkedIn = userJson['linkedIn'];
+        _user.biography = userJson['biography'];
+        
+        _token = response['token'];
+        _userId = response['user_id'];
+        
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading cached user data: $e');
+    }
+  }
+
+  /// Update user data from server in background
+  Future<void> updateUserDataInBackground() async {
+    try {
+      await getUserInfo();
+    } catch (e) {
+      debugPrint('Background update failed: $e');
+      // Don't throw error, just log it
     }
   }
 
@@ -274,6 +325,78 @@ class Auth with ChangeNotifier {
       final responseData = json.decode(response.body);
       if (responseData['status'] == 'failed') {
         throw const HttpException('Password update Failed');
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  /// Register user and automatically login with the returned token
+  Future<void> registerAndLogin(
+    String firstName,
+    String lastName,
+    String email,
+    String password,
+    String phone,
+    String phoneType,
+  ) async {
+    const String apiUrl = "$BASE_URL/apply/register";
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        body: {
+          'firstname': firstName,
+          'lastname': lastName,
+          'email': email,
+          'password': password,
+          'phone': phone,
+          'type-phone': phoneType,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+
+        if (responseData['validity'] == 1) {
+          // Registration successful, set user data and token
+          _user.userId = responseData['user_id'];
+          _user.firstName = responseData['first_name'];
+          _user.lastName = responseData['last_name'];
+          _user.email = responseData['email'];
+          _user.role = responseData['role'];
+          _user.validity = responseData['validity'];
+          _user.deviceVerification = responseData['device_verification'];
+          _user.token = responseData['token'];
+
+          _token = responseData['token'];
+          _userId = responseData['user_id'];
+
+          // Save authentication data
+          await SharedPreferenceHelper().setAuthToken(token!);
+          final prefs = await SharedPreferences.getInstance();
+          final userData = json.encode({
+            'token': _token,
+            'user_id': _userId,
+            'user': jsonEncode(_user),
+          });
+          prefs.setString('userData', userData);
+
+          notifyListeners();
+        } else {
+          // Registration failed - store validation errors if available
+          _user.validity = responseData['validity'];
+          _user.deviceVerification = responseData['device_verification'];
+          
+          // Store validation errors for display
+          if (responseData.containsKey('validation_errors')) {
+            _user.validationErrors = responseData['validation_errors'];
+          }
+          
+          notifyListeners();
+        }
+      } else {
+        throw Exception('Failed to register user');
       }
     } catch (error) {
       rethrow;

@@ -1,12 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
 import '../models/common_functions.dart';
-import '../models/update_user_model.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
+import '../providers/auth.dart';
 import 'auth_screen.dart';
-import 'verification_screen.dart';
+import 'device_verifcation.dart';
 
 class SignUpScreen extends StatefulWidget {
   static const routeName = '/signup';
@@ -17,36 +18,6 @@ class SignUpScreen extends StatefulWidget {
   _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-Future<UpdateUserModel> signUp(
-  String firstName,
-  String lastName,
-  String email,
-  String password,
-  String phone,
-  String phoneType,
-) async {
-  const String apiUrl = "$BASE_URL/api/signup";
-
-  final response = await http.post(
-    Uri.parse(apiUrl),
-    body: {
-      'firstname': firstName,
-      'lastname': lastName,
-      'email': email,
-      'password': password,
-      'phone': phone,
-      'type-phone': phoneType,
-    },
-  );
-
-  if (response.statusCode == 200) {
-    final String responseString = response.body;
-
-    return updateUserModelFromJson(responseString);
-  } else {
-    throw Exception('Failed to load data');
-  }
-}
 
 class _SignUpScreenState extends State<SignUpScreen> {
   GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
@@ -81,8 +52,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _isLoading = true;
     });
+    
     try {
-      final UpdateUserModel user = await signUp(
+      await Provider.of<Auth>(context, listen: false).registerAndLogin(
         _firstNameController.text,
         _lastNameController.text,
         _emailController.text,
@@ -91,33 +63,73 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _phoneType,
       );
 
-      if (user.emailVerification == 'enable') {
-        if (user.message ==
-            "You have already signed up. Please check your inbox to verify your email address") {
+      final userDetails = Provider.of<Auth>(context, listen: false).user;
+
+      if (userDetails.validity == 1) {
+        if (userDetails.deviceVerification == 'needed-verification') {
           Navigator.of(context).pushNamed(
-            VerificationScreen.routeName,
-            arguments: _emailController.text,
+            DeviceVerificationScreen.routeName,
+            arguments: {
+              'email': userDetails.email,
+              'token': userDetails.token,
+            },
           );
-          CommonFunctions.showSuccessToast(user.message.toString());
+          CommonFunctions.showSuccessToast('Registration successful! Please verify your device.');
         } else {
-          Navigator.of(context).pushNamed(
-            VerificationScreen.routeName,
-            arguments: _emailController.text,
+          // Registration and login successful, navigate to home
+          Navigator.pushNamedAndRemoveUntil(context, '/home', (r) => false);
+          CommonFunctions.showSuccessToast(
+            'Welcome, ${userDetails.firstName} ${userDetails.lastName}!',
           );
-          CommonFunctions.showSuccessToast(user.message.toString());
         }
       } else {
-        Navigator.of(context).pushNamed(AuthScreen.routeName);
-        CommonFunctions.showSuccessToast('Signup Successful');
+        // Registration failed - handle specific error types
+        String errorMessage = _getErrorMessage(userDetails.deviceVerification, userDetails.validationErrors);
+        CommonFunctions.showErrorDialog(errorMessage, context);
       }
     } catch (error) {
-      const errorMsg = 'Could not register!';
-      // debugPrint(error);
-      CommonFunctions.showErrorDialog(errorMsg, context);
+      CommonFunctions.showErrorDialog('Could not register! Please try again.', context);
     }
+    
     setState(() {
       _isLoading = false;
     });
+  }
+
+  /// Get user-friendly error message based on server response
+  String _getErrorMessage(String? deviceVerification, String? validationErrors) {
+    switch (deviceVerification) {
+      case 'email-already-exists':
+        return 'This email address is already registered. Please use a different email or try signing in instead.';
+      case 'validation-error':
+        // Show specific validation errors from server
+        if (validationErrors != null && validationErrors.isNotEmpty) {
+          return validationErrors;
+        }
+        return 'Please check your information and make sure all fields are filled correctly.';
+      case 'registration-failed':
+        return 'Registration failed due to a server error. Please try again later.';
+      case 'needed-verification':
+        return 'Registration successful! Please verify your device to complete the process.';
+      default:
+        return 'Registration failed. Please try again.';
+    }
+  }
+
+  /// Open privacy policy URL in browser
+  Future<void> _openPrivacyPolicy() async {
+    const String privacyPolicyUrl = '$BASE_URL/home/privacy_policy';
+    final Uri url = Uri.parse(privacyPolicyUrl);
+    
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        CommonFunctions.showErrorDialog('Could not open privacy policy page', context);
+      }
+    } catch (e) {
+      CommonFunctions.showErrorDialog('Could not open privacy policy page', context);
+    }
   }
 
   InputDecoration getInputDecoration(String hintext, IconData iconData, {bool isPassword = false}) {
@@ -625,11 +637,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               children: [
                                 const TextSpan(text: 'By creating an account, you agree to our '),
-                                TextSpan(
-                                  text: 'NSCA Privacy Policy',
-                                  style: const TextStyle(
-                                    color: kPrimaryColor,
-                                    decoration: TextDecoration.underline,
+                                WidgetSpan(
+                                  child: GestureDetector(
+                                    onTap: _openPrivacyPolicy,
+                                    child: const Text(
+                                      'NSCA Privacy Policy',
+                                      style: TextStyle(
+                                        color: kPrimaryColor,
+                                        decoration: TextDecoration.underline,
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

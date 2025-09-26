@@ -18,6 +18,7 @@ class User {
   String? linkedIn;
   String? biography;
   String? image;
+  String? validationErrors;
 
   User({
     @required this.userId,
@@ -33,6 +34,7 @@ class User {
     this.linkedIn,
     this.biography,
     this.image,
+    this.validationErrors,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
