@@ -4,6 +4,7 @@ import 'dart:io';
 
 import '../models/common_functions.dart';
 import '../providers/auth.dart';
+import '../providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -68,23 +69,23 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
   InputDecoration getInputDecoration(String hintext, IconData iconData) {
     return InputDecoration(
       labelText: hintext,
-      labelStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      labelStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
         fontSize: 14,
       ),
       hintText: 'Enter your $hintext',
-      hintStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      hintStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
       ),
       filled: true,
-      fillColor: kBackgroundColor,
+      fillColor: AppColors.getBackgroundColor(context),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -105,7 +106,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
             hidePassword = !hidePassword;
           });
         },
-        color: kTextSecondaryColor,
+        color: AppColors.getTextSecondaryColor(context),
         icon: Icon(
           hidePassword
               ? Icons.visibility_off_outlined
@@ -121,21 +122,23 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        backgroundColor: kBackgroundColor,
-        title: const Text(
-          'Change Password',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: kTextColor,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: AppBar(
+            elevation: 0,
+            iconTheme: IconThemeData(color: AppColors.getTextColor(context)),
+            backgroundColor: AppColors.getCardColor(context),
+            title: Text(
+              'Change Password',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.getTextColor(context),
+              ),
+            ),
           ),
-        ),
-      ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
@@ -153,9 +156,9 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: kCardColor,
+                      color: AppColors.getCardColor(context),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: kBorderColor),
+                      border: Border.all(color: AppColors.getBorderColor(context)),
                     ),
                     child: Column(
                       children: [
@@ -172,20 +175,20 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Update Password',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
-                            color: kTextColor,
+                            color: AppColors.getTextColor(context),
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Change your account password',
                           style: TextStyle(
                             fontSize: 16,
-                            color: kTextSecondaryColor,
+                            color: AppColors.getTextSecondaryColor(context),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -200,30 +203,30 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: kCardColor,
+                      color: AppColors.getCardColor(context),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: kBorderColor),
+                      border: Border.all(color: AppColors.getBorderColor(context)),
                     ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Password Information',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: kTextColor,
+                              color: AppColors.getTextColor(context),
                             ),
                           ),
                           const SizedBox(height: 24),
                           
                           // Current Password
                           TextFormField(
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: kTextColor,
+                              color: AppColors.getTextColor(context),
                             ),
                             decoration: getInputDecoration(
                               'Current Password',
@@ -247,9 +250,9 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                           
                           // New Password
                           TextFormField(
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: kTextColor,
+                              color: AppColors.getTextColor(context),
                             ),
                             decoration: getInputDecoration(
                               'New Password',
@@ -274,9 +277,9 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                           
                           // Confirm Password
                           TextFormField(
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: kTextColor,
+                              color: AppColors.getTextColor(context),
                             ),
                             decoration: getInputDecoration(
                               'Confirm Password',
@@ -303,7 +306,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                               onPressed: _isLoading ? null : _submit,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryColor,
-                                foregroundColor: kBackgroundColor,
+                                foregroundColor: kTextColorLight,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -314,7 +317,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                                       width: 24,
                                       height: 24,
                                       child: CircularProgressIndicator(
-                                        color: kBackgroundColor,
+                                        color: kTextColorLight,
                                         strokeWidth: 2.5,
                                       ),
                                     )
@@ -336,6 +339,8 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
                 ],
               ),
             ),
+        );
+      },
     );
   }
 }

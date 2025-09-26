@@ -2,6 +2,7 @@
 
 import '../constants.dart';
 import '../providers/auth.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/user_image_picker.dart';
 import '../models/user.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
         borderSide: BorderSide(
-          color: Colors.grey.withValues(alpha: 0.3),
+          color: AppColors.getBorderColor(context),
           width: 1.5,
         ),
       ),
@@ -58,7 +59,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         borderSide: BorderSide(color: kPrimaryColor, width: 2.5),
       ),
       border: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
         borderRadius: BorderRadius.circular(16.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
@@ -80,12 +81,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         child: Icon(iconData, color: kPrimaryColor, size: 20),
       ),
       hintStyle: TextStyle(
-        color: Colors.grey.withValues(alpha: 0.7),
+        color: AppColors.getTextSecondaryColor(context),
         fontSize: 16,
         fontWeight: FontWeight.w400,
       ),
       hintText: hintext,
-      fillColor: Colors.grey.withValues(alpha: 0.03),
+      fillColor: AppColors.getBackgroundColor(context),
       contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       errorStyle: const TextStyle(
         color: kRedColor,
@@ -157,21 +158,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        backgroundColor: kBackgroundColor,
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: kTextColor,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: AppBar(
+            elevation: 0,
+            iconTheme: IconThemeData(color: AppColors.getTextColor(context)),
+            backgroundColor: AppColors.getCardColor(context),
+            title: Text(
+              'Edit Profile',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.getTextColor(context),
+              ),
+            ),
           ),
-        ),
-      ),
       body: FutureBuilder(
         future:
             Provider.of<Auth>(context, listen: false).loadUserDataFromCache(),
@@ -194,17 +197,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       children: [
                         const Icon(Icons.error, color: Colors.red, size: 64),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'No User Data',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: AppColors.getTextColor(context),
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Please log in again',
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(
+                            color: AppColors.getTextSecondaryColor(context),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -235,18 +241,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: kCardColor,
+                            color: AppColors.getCardColor(context),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: kBorderColor),
+                            border: Border.all(color: AppColors.getBorderColor(context)),
                           ),
                           child: Column(
                             children: [
-                              const Text(
+                              Text(
                                 'Profile Picture',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: kTextColor,
+                                  color: AppColors.getTextColor(context),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -262,54 +268,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: kCardColor,
+                            color: AppColors.getCardColor(context),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: kBorderColor),
+                            border: Border.all(color: AppColors.getBorderColor(context)),
                           ),
                           child: Form(
                             key: _formKey,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Personal Information',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
-                                    color: kTextColor,
+                                    color: AppColors.getTextColor(context),
                                   ),
                                 ),
                                 const SizedBox(height: 24),
 
                                 // First Name
                                 TextFormField(
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
-                                    color: kTextColor,
+                                    color: AppColors.getTextColor(context),
                                   ),
                                   initialValue: user.firstName,
                                   decoration: InputDecoration(
                                     labelText: 'First Name',
-                                    labelStyle: const TextStyle(
-                                      color: kTextSecondaryColor,
+                                    labelStyle: TextStyle(
+                                      color: AppColors.getTextSecondaryColor(context),
                                       fontSize: 14,
                                     ),
                                     hintText: 'Enter your first name',
-                                    hintStyle: const TextStyle(
-                                      color: kTextSecondaryColor,
+                                    hintStyle: TextStyle(
+                                      color: AppColors.getTextSecondaryColor(context),
                                     ),
                                     filled: true,
-                                    fillColor: kBackgroundColor,
+                                    fillColor: AppColors.getBackgroundColor(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: kBorderColor,
+                                      borderSide: BorderSide(
+                                        color: AppColors.getBorderColor(context),
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: kBorderColor,
+                                      borderSide: BorderSide(
+                                        color: AppColors.getBorderColor(context),
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
@@ -342,33 +348,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                                 // Last Name
                                 TextFormField(
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
-                                    color: kTextColor,
+                                    color: AppColors.getTextColor(context),
                                   ),
                                   initialValue: user.lastName,
                                   decoration: InputDecoration(
                                     labelText: 'Last Name',
-                                    labelStyle: const TextStyle(
-                                      color: kTextSecondaryColor,
+                                    labelStyle: TextStyle(
+                                      color: AppColors.getTextSecondaryColor(context),
                                       fontSize: 14,
                                     ),
                                     hintText: 'Enter your last name',
-                                    hintStyle: const TextStyle(
-                                      color: kTextSecondaryColor,
+                                    hintStyle: TextStyle(
+                                      color: AppColors.getTextSecondaryColor(context),
                                     ),
                                     filled: true,
-                                    fillColor: kBackgroundColor,
+                                    fillColor: AppColors.getBackgroundColor(context),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: kBorderColor,
+                                      borderSide: BorderSide(
+                                        color: AppColors.getBorderColor(context),
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: kBorderColor,
+                                      borderSide: BorderSide(
+                                        color: AppColors.getBorderColor(context),
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
@@ -408,52 +414,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: kCardColor,
+                            color: AppColors.getCardColor(context),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: kBorderColor),
+                            border: Border.all(color: AppColors.getBorderColor(context)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Social Links',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: kTextColor,
+                                  color: AppColors.getTextColor(context),
                                 ),
                               ),
                               const SizedBox(height: 24),
 
                               // Facebook Link
                               TextFormField(
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: kTextColor,
+                                  color: AppColors.getTextColor(context),
                                 ),
                                 initialValue: user.facebook,
                                 decoration: InputDecoration(
                                   labelText: 'Facebook',
-                                  labelStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  labelStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                     fontSize: 14,
                                   ),
                                   hintText: 'Enter your Facebook profile URL',
-                                  hintStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  hintStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                   ),
                                   filled: true,
-                                  fillColor: kBackgroundColor,
+                                  fillColor: AppColors.getBackgroundColor(context),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -479,33 +485,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                               // Twitter Link
                               TextFormField(
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: kTextColor,
+                                  color: AppColors.getTextColor(context),
                                 ),
                                 initialValue: user.twitter,
                                 decoration: InputDecoration(
                                   labelText: 'Twitter',
-                                  labelStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  labelStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                     fontSize: 14,
                                   ),
                                   hintText: 'Enter your Twitter profile URL',
-                                  hintStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  hintStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                   ),
                                   filled: true,
-                                  fillColor: kBackgroundColor,
+                                  fillColor: AppColors.getBackgroundColor(context),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -531,33 +537,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                               // LinkedIn Link
                               TextFormField(
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: kTextColor,
+                                  color: AppColors.getTextColor(context),
                                 ),
                                 initialValue: user.linkedIn,
                                 decoration: InputDecoration(
                                   labelText: 'LinkedIn',
-                                  labelStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  labelStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                     fontSize: 14,
                                   ),
                                   hintText: 'Enter your LinkedIn profile URL',
-                                  hintStyle: const TextStyle(
-                                    color: kTextSecondaryColor,
+                                  hintStyle: TextStyle(
+                                    color: AppColors.getTextSecondaryColor(context),
                                   ),
                                   filled: true,
-                                  fillColor: kBackgroundColor,
+                                  fillColor: AppColors.getBackgroundColor(context),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: kBorderColor,
+                                    borderSide: BorderSide(
+                                      color: AppColors.getBorderColor(context),
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -592,7 +598,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             onPressed: _isLoading ? null : _submit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: kPrimaryColor,
-                              foregroundColor: kBackgroundColor,
+                              foregroundColor: kTextColorLight,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -604,7 +610,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       width: 24,
                                       height: 24,
                                       child: CircularProgressIndicator(
-                                        color: kBackgroundColor,
+                                        color: kTextColorLight,
                                         strokeWidth: 2.5,
                                       ),
                                     )
@@ -628,6 +634,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
         },
       ),
+        );
+      },
     );
   }
 }

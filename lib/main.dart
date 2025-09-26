@@ -6,7 +6,6 @@ import './providers/course_forum.dart';
 import './providers/theme_provider.dart';
 import './screens/account_remove_screen.dart';
 import './screens/auth_screen_private.dart';
-import './screens/downloaded_course_list.dart';
 import './screens/edit_password_screen.dart';
 import './screens/edit_profile_screen.dart';
 import './screens/sub_category_screen.dart';
@@ -146,8 +145,6 @@ class MyApp extends StatelessWidget {
                     (ctx) => const VerificationScreen(),
                 AccountRemoveScreen.routeName:
                     (ctx) => const AccountRemoveScreen(),
-                DownloadedCourseList.routeName:
-                    (ctx) => const DownloadedCourseList(),
                 SubCategoryScreen.routeName: (ctx) => const SubCategoryScreen(),
                 BundleListScreen.routeName: (ctx) => const BundleListScreen(),
                 BundleDetailsScreen.routeName:

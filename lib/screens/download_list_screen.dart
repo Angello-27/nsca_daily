@@ -11,7 +11,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:pod_player/pod_player.dart';
-import 'downloaded_course_list.dart';
 
 class DownloadListScreen extends StatefulWidget {
   final int courseId;
@@ -93,7 +92,8 @@ class _DownloadListScreenState extends State<DownloadListScreen> {
         //trigger leaving and use own data
         Navigator.pop(context, false);
         Navigator.pop(context, false);
-        Navigator.of(context).pushNamed(DownloadedCourseList.routeName);
+        // Navigate back to account screen instead
+        Navigator.of(context).pushNamedAndRemoveUntil('/account', (r) => false);
 
         //we need to return a future
         return Future.value(false);
@@ -110,7 +110,8 @@ class _DownloadListScreenState extends State<DownloadListScreen> {
             onPressed: () {
               Navigator.pop(context, true);
               Navigator.pop(context, true);
-              Navigator.of(context).pushNamed(DownloadedCourseList.routeName);
+              // Navigate back to account screen instead
+              Navigator.of(context).pushNamedAndRemoveUntil('/account', (r) => false);
             },
           ),
         ),

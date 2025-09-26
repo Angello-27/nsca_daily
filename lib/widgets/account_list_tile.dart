@@ -1,5 +1,4 @@
 import '../providers/auth.dart';
-import '../screens/downloaded_course_list.dart';
 import '../screens/edit_password_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,8 @@ class _AccountListTileState extends State<AccountListTile> {
     } else if (widget.actionType == 'account_delete') {
       navigator.pushNamed(AccountRemoveScreen.routeName);
     } else {
-      navigator.pushNamed(DownloadedCourseList.routeName);
+      // Default action - could be removed or replaced with another action
+      return;
     }
   }
 
