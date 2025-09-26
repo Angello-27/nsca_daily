@@ -439,18 +439,27 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
           // Indicador de carga
           if (_isLoading || !_tokenLoaded)
             Container(
-              color: Colors.white.withValues(alpha: 0.8),
+              width: double.infinity,
+              height: double.infinity,
+              color: kBackgroundColor.withValues(alpha: 0.8),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                    CircularProgressIndicator(
+                      color: kPrimaryColor,
+                      backgroundColor: kCardColor,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       !_tokenLoaded 
                           ? 'Loading authentication...' 
                           : 'Loading chaplain certification process...',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),

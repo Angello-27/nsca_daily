@@ -86,14 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
             // Mientras carga, mostramos un indicador
             if (_isLoading)
               Container(
-                color: kBackgroundColor.withOpacity(0.8),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * .5,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: kPrimaryColor,
-                      backgroundColor: kCardColor,
-                    ),
+                width: double.infinity,
+                height: double.infinity,
+                color: kBackgroundColor.withValues(alpha: 0.8),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: kPrimaryColor,
+                    backgroundColor: kCardColor,
                   ),
                 ),
               ),

@@ -173,27 +173,63 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
       body: FutureBuilder(
-        future: Provider.of<Auth>(context, listen: false).getUserInfo(),
-        builder: (ctx, dataSnapshot) {
-          if (dataSnapshot.connectionState == ConnectionState.waiting) {
+        future:
+            Provider.of<Auth>(context, listen: false).loadUserDataFromCache(),
+        builder: (ctx, cacheSnapshot) {
+          if (cacheSnapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(
-                color: kPrimaryColor,
-              ),
+              child: CircularProgressIndicator(color: kPrimaryColor),
             );
           } else {
-            if (dataSnapshot.error != null) {
-              return const Center(child: Text('Error Occurred'));
-            } else {
-              return Consumer<Auth>(
-                builder: (context, authData, child) {
-                  final user = authData.user;
+            return Consumer<Auth>(
+              builder: (context, authData, child) {
+                final user = authData.user;
+
+                // Check if we have basic user info (from cache)
+                if (user.firstName == null || user.firstName!.isEmpty) {
+                  // If no user info at all, show error
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error, color: Colors.red, size: 64),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No User Data',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Please log in again',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed:
+                              () => Navigator.pushReplacementNamed(
+                                context,
+                                '/auth',
+                              ),
+                          child: const Text('Go to Login'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  // We have user info, show the edit profile screen and update in background
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // Update user data in background without blocking UI
+                    authData.updateUserDataInBackground();
+                  });
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
-                        
+
                         // Profile Picture Section
                         Container(
                           width: double.infinity,
@@ -218,9 +254,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Personal Information Section
                         Container(
                           width: double.infinity,
@@ -244,7 +280,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                
+
                                 // First Name
                                 TextFormField(
                                   style: const TextStyle(
@@ -266,15 +302,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     fillColor: kBackgroundColor,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kBorderColor),
+                                      borderSide: const BorderSide(
+                                        color: kBorderColor,
+                                      ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kBorderColor),
+                                      borderSide: const BorderSide(
+                                        color: kBorderColor,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                      borderSide: const BorderSide(
+                                        color: kPrimaryColor,
+                                        width: 2,
+                                      ),
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -294,9 +337,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     _firstNameController.text = value as String;
                                   },
                                 ),
-                                
+
                                 const SizedBox(height: 20),
-                                
+
                                 // Last Name
                                 TextFormField(
                                   style: const TextStyle(
@@ -318,15 +361,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     fillColor: kBackgroundColor,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kBorderColor),
+                                      borderSide: const BorderSide(
+                                        color: kBorderColor,
+                                      ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kBorderColor),
+                                      borderSide: const BorderSide(
+                                        color: kBorderColor,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                      borderSide: const BorderSide(
+                                        color: kPrimaryColor,
+                                        width: 2,
+                                      ),
                                     ),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -350,9 +400,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Social Links Section
                         Container(
                           width: double.infinity,
@@ -374,7 +424,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              
+
                               // Facebook Link
                               TextFormField(
                                 style: const TextStyle(
@@ -396,15 +446,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   fillColor: kBackgroundColor,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                    borderSide: const BorderSide(
+                                      color: kPrimaryColor,
+                                      width: 2,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -417,9 +474,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   _userData['facebook'] = value.toString();
                                 },
                               ),
-                              
+
                               const SizedBox(height: 20),
-                              
+
                               // Twitter Link
                               TextFormField(
                                 style: const TextStyle(
@@ -441,15 +498,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   fillColor: kBackgroundColor,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                    borderSide: const BorderSide(
+                                      color: kPrimaryColor,
+                                      width: 2,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -462,9 +526,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   _userData['twitter'] = value.toString();
                                 },
                               ),
-                              
+
                               const SizedBox(height: 20),
-                              
+
                               // LinkedIn Link
                               TextFormField(
                                 style: const TextStyle(
@@ -486,15 +550,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   fillColor: kBackgroundColor,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kBorderColor),
+                                    borderSide: const BorderSide(
+                                      color: kBorderColor,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                                    borderSide: const BorderSide(
+                                      color: kPrimaryColor,
+                                      width: 2,
+                                    ),
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -510,9 +581,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Update Button
                         SizedBox(
                           width: double.infinity,
@@ -527,32 +598,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: kBackgroundColor,
-                                      strokeWidth: 2.5,
+                            child:
+                                _isLoading
+                                    ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        color: kBackgroundColor,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Update Profile',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  )
-                                : const Text(
-                                    'Update Profile',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 40),
                       ],
                     ),
                   );
-                },
-              );
-            }
+                }
+              },
+            );
           }
         },
       ),
