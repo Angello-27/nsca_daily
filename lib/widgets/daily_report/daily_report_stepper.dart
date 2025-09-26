@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:nsca_daily/constants.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
+import '../../providers/theme_provider.dart';
 import './date_step.dart';
 import 'student_demographics_step.dart';
 import './student_ethnic_step.dart';
@@ -137,90 +138,102 @@ class _DailyReportStepperState extends State<DailyReportStepper> {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        backgroundColor: kCardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Lottie.asset(
-              'assets/images/success.json',
-              width: 120,
-              repeat: false,
+      builder: (_) => Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return AlertDialog(
+            backgroundColor: AppColors.getCardColor(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Your daily report was submitted successfully!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16, 
-                fontWeight: FontWeight.w600,
-                color: kTextColor,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset(
+                  'assets/images/success.json',
+                  width: 120,
+                  repeat: false,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Your daily report was submitted successfully!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.getTextColor(context),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  backgroundColor: kPrimaryColor,
+                  foregroundColor: AppColors.getTextColor(context),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              backgroundColor: kPrimaryColor,
-              foregroundColor: kBackgroundColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: const Text(
-              'OK',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildNextButton(ControlsDetails details, bool isLast) {
-    return MaterialButton(
-      onPressed: details.onStepContinue,
-      color: kPrimaryColor,
-      textColor: kBackgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      splashColor: kPrimaryColor.withValues(alpha: 0.8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Text(
-        isLast ? 'Submit Report' : 'Continue',
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialButton(
+          onPressed: details.onStepContinue,
+          color: kPrimaryColor,
+          textColor: AppColors.getTextColor(context),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          splashColor: kPrimaryColor.withValues(alpha: 0.8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Text(
+            isLast ? 'Submit Report' : 'Continue',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildBackButton(ControlsDetails details) {
-    return MaterialButton(
-      onPressed: details.onStepCancel,
-      color: kCardColor,
-      textColor: kTextColor,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      splashColor: kTextSecondaryColor.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: const BorderSide(color: kBorderColor),
-      ),
-      child: const Text(
-        'Back', 
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialButton(
+          onPressed: details.onStepCancel,
+          color: AppColors.getCardColor(context),
+          textColor: AppColors.getTextColor(context),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          splashColor: AppColors.getTextSecondaryColor(context).withValues(alpha: 0.1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: BorderSide(color: AppColors.getBorderColor(context)),
+          ),
+          child: const Text(
+            'Back', 
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+        );
+      },
     );
   }
 

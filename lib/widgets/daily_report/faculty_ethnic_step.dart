@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
+import '../../providers/theme_provider.dart';
 import '../../helpers/report_helpers.dart';
 import '../../constants.dart';
 
@@ -15,32 +16,36 @@ class FacultyEthnicStep extends StatelessWidget {
     final prov = context.watch<DailyReportProvider>();
     final total = prov.teachersMany ?? 0;
 
-    return Column(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Muestra el total de personal académico
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: kCardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kBorderColor),
-          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.getCardColor(context),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.getBorderColor(context)),
+            ),
           child: Row(
             children: [
               Icon(Icons.group_outlined, color: kPrimaryColor, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Total Faculty/Staff: $total',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600, 
                   fontSize: 16,
-                  color: kTextColor,
+                  color: AppColors.getTextColor(context),
                 ),
               ),
             ],
           ),
         ),
+        
+        const SizedBox(height: 20),
 
         // Para cada grupo étnico del staff
         ...getEthnicGroups().entries.map((e) {
@@ -61,16 +66,22 @@ class FacultyEthnicStep extends StatelessWidget {
             child: DropdownButtonFormField<int>(
               decoration: InputDecoration(
                 labelText: label,
-                labelStyle: const TextStyle(color: kTextSecondaryColor),
-                border: kDefaultInputBorder,
-                focusedBorder: kDefaultFocusInputBorder,
+                labelStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                ),
                 filled: true,
-                fillColor: kCardColor,
+                fillColor: AppColors.getCardColor(context),
               ),
               initialValue: current <= maxForThis ? current : 0,
               items:
                   List.generate(maxForThis + 1, (i) => i)
-                      .map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor))))
+                      .map((v) => DropdownMenuItem(value: v, child: Text('$v', style: TextStyle(color: AppColors.getTextColor(context)))))
                       .toList(),
               onChanged: (v) => prov.setEthnicTeacher(key, v),
               validator: (_) {
@@ -84,6 +95,8 @@ class FacultyEthnicStep extends StatelessWidget {
           );
         }),
       ],
+    );
+      },
     );
   }
 }

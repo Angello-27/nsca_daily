@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nsca_daily/helpers/report_helpers.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
+import '../../providers/theme_provider.dart';
 import '../../constants.dart';
 
 /// Widget para seleccionar horas de trabajo y conteo de alumnos (máximo 50)
@@ -49,130 +50,158 @@ class _StudentDemographicsStepState extends State<StudentDemographicsStep> {
     final int maxMale = (maxTotal - femaleCount).clamp(0, maxTotal);
     final int maxFemale = (maxTotal - maleCount).clamp(0, maxTotal);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Muestra el límite total de alumnos
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: kCardColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kBorderColor),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, color: kPrimaryColor, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Maximum Students Allowed: $maxTotal',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600, 
-                  fontSize: 16,
-                  color: kTextColor,
-                ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Muestra el límite total de alumnos
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.getCardColor(context),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
-            ],
-          ),
-        ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: kPrimaryColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Maximum Students Allowed: $maxTotal',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600, 
+                      fontSize: 16,
+                      color: AppColors.getTextColor(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-        const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-        // Male Students
-        DropdownButtonFormField<int?>(
-          decoration: InputDecoration(
-            labelText: 'Male Students',
-            labelStyle: const TextStyle(color: kTextSecondaryColor),
-            border: kDefaultInputBorder,
-            focusedBorder: kDefaultFocusInputBorder,
-            filled: true,
-            fillColor: kCardColor,
-          ),
-          initialValue: prov.studentsMale,
-          items: [
-            const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: kTextColor))),
-            ...List.generate(
-              maxMale,
-              (i) => i + 1,
-            ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor)))),
+            // Male Students
+            DropdownButtonFormField<int?>(
+              decoration: InputDecoration(
+                labelText: 'Male Students',
+                labelStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCardColor(context),
+              ),
+              initialValue: prov.studentsMale,
+              items: [
+                DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: AppColors.getTextColor(context)))),
+                ...List.generate(
+                  maxMale,
+                  (i) => i + 1,
+                ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: TextStyle(color: AppColors.getTextColor(context))))),
+              ],
+              onChanged: prov.setStudentsMale,
+              validator: (_) {
+                if (prov.studentsMale == null && prov.studentsFemale == null) {
+                  return 'Select at least one gender';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Female Students
+            DropdownButtonFormField<int?>(
+              decoration: InputDecoration(
+                labelText: 'Female Students',
+                labelStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCardColor(context),
+              ),
+              initialValue: prov.studentsFemale,
+              items: [
+                DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: AppColors.getTextColor(context)))),
+                ...List.generate(
+                  maxFemale,
+                  (i) => i + 1,
+                ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: TextStyle(color: AppColors.getTextColor(context))))),
+              ],
+              onChanged: prov.setStudentsFemale,
+              validator: (_) {
+                if (prov.studentsMale == null && prov.studentsFemale == null) {
+                  return 'Select at least one gender';
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Total Students
+            TextFormField(
+              controller: _totalController,
+              readOnly: true,
+              style: TextStyle(color: AppColors.getTextColor(context)),
+              decoration: InputDecoration(
+                labelText: 'Total Students',
+                labelStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCardColor(context),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Average Age dropdown
+            DropdownButtonFormField<String?>(
+              decoration: InputDecoration(
+                labelText: 'Average Age',
+                labelStyle: TextStyle(color: AppColors.getTextSecondaryColor(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCardColor(context),
+              ),
+              items:
+                  getAgeGroups().entries
+                      .map(
+                        (e) => DropdownMenuItem(value: e.key, child: Text(e.value, style: TextStyle(color: AppColors.getTextColor(context)))),
+                      )
+                      .toList(),
+              initialValue: prov.averageAge,
+              onChanged: prov.setAverageAge,
+            ),
           ],
-          onChanged: prov.setStudentsMale,
-          validator: (_) {
-            if (prov.studentsMale == null && prov.studentsFemale == null) {
-              return 'Select at least one gender';
-            }
-            return null;
-          },
-        ),
-
-        const SizedBox(height: 16),
-
-        // Female Students
-        DropdownButtonFormField<int?>(
-          decoration: InputDecoration(
-            labelText: 'Female Students',
-            labelStyle: const TextStyle(color: kTextSecondaryColor),
-            border: kDefaultInputBorder,
-            focusedBorder: kDefaultFocusInputBorder,
-            filled: true,
-            fillColor: kCardColor,
-          ),
-          initialValue: prov.studentsFemale,
-          items: [
-            const DropdownMenuItem<int?>(value: null, child: Text('None', style: TextStyle(color: kTextColor))),
-            ...List.generate(
-              maxFemale,
-              (i) => i + 1,
-            ).map((v) => DropdownMenuItem(value: v, child: Text('$v', style: const TextStyle(color: kTextColor)))),
-          ],
-          onChanged: prov.setStudentsFemale,
-          validator: (_) {
-            if (prov.studentsMale == null && prov.studentsFemale == null) {
-              return 'Select at least one gender';
-            }
-            return null;
-          },
-        ),
-
-        const SizedBox(height: 16),
-
-        // Total Students
-        TextFormField(
-          controller: _totalController,
-          readOnly: true,
-          style: const TextStyle(color: kTextColor),
-          decoration: InputDecoration(
-            labelText: 'Total Students',
-            labelStyle: const TextStyle(color: kTextSecondaryColor),
-            border: kDefaultInputBorder,
-            focusedBorder: kDefaultFocusInputBorder,
-            filled: true,
-            fillColor: kCardColor,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Average Age dropdown
-        DropdownButtonFormField<String?>(
-          decoration: InputDecoration(
-            labelText: 'Average Age',
-            labelStyle: const TextStyle(color: kTextSecondaryColor),
-            border: kDefaultInputBorder,
-            focusedBorder: kDefaultFocusInputBorder,
-            filled: true,
-            fillColor: kCardColor,
-          ),
-          items:
-              getAgeGroups().entries
-                  .map(
-                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value, style: const TextStyle(color: kTextColor))),
-                  )
-                  .toList(),
-          initialValue: prov.averageAge,
-          onChanged: prov.setAverageAge,
-        ),
-      ],
+        );
+      },
     );
   }
 }

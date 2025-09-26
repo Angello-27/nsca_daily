@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/daily_report.dart';
+import '../../providers/theme_provider.dart';
 import '../../helpers/report_helpers.dart';
 import '../../constants.dart';
 
@@ -15,21 +16,23 @@ class MeetingCrisisStep extends StatelessWidget {
     final prov = context.watch<DailyReportProvider>();
     final crisisOptions = getCrisisTypes();
 
-    return Column(
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Parent/guardian meeting switch
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: kCardColor,
+            color: AppColors.getCardColor(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kBorderColor),
+            border: Border.all(color: AppColors.getBorderColor(context)),
           ),
           child: SwitchListTile(
-            title: const Text(
+            title: Text(
               'Met with Parent/Guardian?',
-              style: TextStyle(color: kTextColor),
+              style: TextStyle(color: AppColors.getTextColor(context)),
             ),
             value: prov.metParent,
             activeThumbColor: kPrimaryColor,
@@ -42,14 +45,14 @@ class MeetingCrisisStep extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: kCardColor,
+            color: AppColors.getCardColor(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: kBorderColor),
+            border: Border.all(color: AppColors.getBorderColor(context)),
           ),
           child: SwitchListTile(
-            title: const Text(
+            title: Text(
               'Crisis Today?',
-              style: TextStyle(color: kTextColor),
+              style: TextStyle(color: AppColors.getTextColor(context)),
             ),
             value: prov.crisisToday,
             activeThumbColor: kPrimaryColor,
@@ -63,9 +66,9 @@ class MeetingCrisisStep extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: kCardColor,
+              color: AppColors.getCardColor(context),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: kBorderColor),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -74,13 +77,13 @@ class MeetingCrisisStep extends StatelessWidget {
                   children: [
                     Icon(Icons.warning_outlined, color: kRedColor, size: 20),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Crisis Types',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: kTextColor,
+                      Text(
+                        'Crisis Types',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.getTextColor(context),
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 Checkbox(
@@ -100,14 +103,14 @@ class MeetingCrisisStep extends StatelessWidget {
             (e) => Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: CheckboxListTile(
                 title: Text(
                   e.value,
-                  style: const TextStyle(color: kTextColor),
+                  style: TextStyle(color: AppColors.getTextColor(context)),
                 ),
                 value: prov.crisisTypes.contains(e.key),
                 activeColor: kPrimaryColor,
@@ -138,6 +141,8 @@ class MeetingCrisisStep extends StatelessWidget {
           ),
         ],
       ],
+    );
+      },
     );
   }
 }
