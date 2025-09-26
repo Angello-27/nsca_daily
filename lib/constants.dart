@@ -1,8 +1,8 @@
 // ignore_for_file: constant_identifier_names
 import 'package:flutter/material.dart';
 
-// const String BASE_URL = 'https://www.nscaacademy.org';
-const String BASE_URL = 'http://10.10.10.195/nsca-lms';
+const String BASE_URL = 'https://www.nscaacademy.org';
+// const String BASE_URL = 'http://10.10.10.195/nsca-lms';
 
 // Common colors (same for both themes)
 const kPrimaryColor = Color(0xFFFFC600); // Yellow primary

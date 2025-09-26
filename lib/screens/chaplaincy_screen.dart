@@ -222,7 +222,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                 InAppWebView(
                   key: const PageStorageKey('chaplaincyWebView'),
                   initialUrlRequest: URLRequest(
-                    url: WebUri('$BASE_URL/chaplain/stages?auth_token=$_authToken'),
+                    url: WebUri('$BASE_URL/chaplain/authenticate?auth_token=$_authToken'),
                     headers: {
                       'Authorization': 'Bearer $_authToken',
                       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -260,7 +260,7 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
                   onWebViewCreated: (controller) {
                     _controller = controller;
                     
-                    debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
+                    debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/authenticate');
                     debugPrint('🔐 Autenticación JWT activa con token: ${_authToken?.substring(0, 20)}...');
 
                     // Agregar JavaScript channel
