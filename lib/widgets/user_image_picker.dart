@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../constants.dart';
 import 'custom_text.dart';
 
@@ -28,15 +29,129 @@ class _UserImagePickerState extends State<UserImagePicker> {
   dynamic image;
 
   void _pickImage() async {
-    image = await SharedPreferenceHelper().getUserImage();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    
-    // Check if user actually selected an image (didn't cancel)
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
+    // Verificar permisos antes de acceder a la galería
+    // Para Android 13+ usar READ_MEDIA_IMAGES, para versiones anteriores usar storage
+    PermissionStatus permission;
+    if (Platform.isAndroid) {
+      // Para Android 13+ (API 33+) usar photos, para versiones anteriores usar storage
+      // Android 11 (API 30), Android 12 (API 31) necesitan storage
+      // Android 13+ (API 33+) usa photos (READ_MEDIA_IMAGES)
+      permission = await Permission.storage.request();
+    } else {
+      // Para iOS usar photos
+      permission = await Permission.photos.request();
     }
+    
+    if (permission.isGranted) {
+      image = await SharedPreferenceHelper().getUserImage();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      
+      // Check if user actually selected an image (didn't cancel)
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } else if (permission.isDenied) {
+      // Mostrar mensaje explicativo
+      _showPermissionDialog(
+        'Storage Permissions',
+        'This app needs access to your device storage to select profile photos. Please allow access in settings.',
+      );
+    } else if (permission.isPermanentlyDenied) {
+      // Abrir configuración de la app
+      _showPermissionDialog(
+        'Permissions Required',
+        'Storage permissions have been permanently denied. Please go to Settings > Apps > NSCA Daily > Permissions and allow storage access.',
+        showSettingsButton: true,
+      );
+    }
+  }
+
+  void _pickImageFromCamera() async {
+    // Verificar permisos de cámara
+    final permission = await Permission.camera.request();
+    
+    if (permission.isGranted) {
+      image = await SharedPreferenceHelper().getUserImage();
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
+      
+      // Check if user actually selected an image (didn't cancel)
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } else if (permission.isDenied) {
+      // Mostrar mensaje explicativo
+      _showPermissionDialog(
+        'Camera Permissions',
+        'This app needs access to your camera to take profile photos. Please allow access in settings.',
+      );
+    } else if (permission.isPermanentlyDenied) {
+      // Abrir configuración de la app
+      _showPermissionDialog(
+        'Permissions Required',
+        'Camera permissions have been permanently denied. Please go to Settings > Apps > NSCA Daily > Permissions and allow camera access.',
+        showSettingsButton: true,
+      );
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: kPrimaryColor),
+                title: const Text('Select from Gallery'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: kPrimaryColor),
+                title: const Text('Take Photo'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImageFromCamera();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPermissionDialog(String title, String message, {bool showSettingsButton = false}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            if (showSettingsButton)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  openAppSettings();
+                },
+                child: const Text('Settings'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _submitImage() async {
@@ -103,7 +218,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
                       child: FittedBox(
                         child: FloatingActionButton(
                           elevation: 1,
-                          onPressed: _pickImage,
+                          onPressed: _showImageSourceDialog,
                           tooltip: 'Choose Image',
                           backgroundColor: Colors.white,
                           child: const CircleAvatar(

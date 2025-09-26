@@ -5,7 +5,7 @@
 name: nsca_daily
 description: "Aplicación móvil para la formación y gestión de capellanes escolares de NSCA"
 publish_to: 'none'  # No se publica en pub.dev (aplicación privada)
-version: 0.1.0
+version: 1.1.0+2
 
 # Configuración del entorno de desarrollo
 environment:
