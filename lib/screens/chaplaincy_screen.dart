@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
+import '../providers/theme_provider.dart';
 
 class ChaplaincyScreen extends StatefulWidget {
   static const routeName = '/chaplaincy';
@@ -209,264 +211,284 @@ class _ChaplaincyScreenState extends State<ChaplaincyScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context); // Añade esto si usas AutomaticKeepAliveClientMixin
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Stack(
-        children: [
-          // Solo mostrar WebView cuando el token esté cargado
-          if (_tokenLoaded && _authToken != null)
-            InAppWebView(
-              key: const PageStorageKey('chaplaincyWebView'),
-              initialUrlRequest: URLRequest(
-                url: WebUri('$BASE_URL/chaplain/stages?auth_token=$_authToken'),
-                headers: {
-                  'Authorization': 'Bearer $_authToken',
-                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                  'User-Agent': 'NSCA-Daily-App/1.0',
-                  'Cache-Control': 'no-cache',
-                  'Pragma': 'no-cache',
-                },
-              ),
-            initialSettings: InAppWebViewSettings(
-              javaScriptEnabled: true,
-              domStorageEnabled: true,
-              allowFileAccessFromFileURLs: true,
-              allowUniversalAccessFromFileURLs: true,
-              mediaPlaybackRequiresUserGesture: false,
-              allowsInlineMediaPlayback: true,
-              userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
-              allowFileAccess: true,
-              supportZoom: false,
-              useOnLoadResource: true,
-              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-              useShouldOverrideUrlLoading: true,
-              clearCache: false,
-              cacheEnabled: true,
-              transparentBackground: false,
-              thirdPartyCookiesEnabled: true,
-              hardwareAcceleration: true,
-              supportMultipleWindows: true,
-              useWideViewPort: true,
-              loadWithOverviewMode: true,
-              builtInZoomControls: false,
-              displayZoomControls: false,
-              // Configuraciones adicionales para enlaces externos
-              javaScriptCanOpenWindowsAutomatically: true,
-            ),
-            onWebViewCreated: (controller) {
-              _controller = controller;
-              
-              debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
-              debugPrint('🔐 Autenticación JWT activa con token: ${_authToken?.substring(0, 20)}...');
-
-              // Agregar JavaScript channel
-              _controller!.addJavaScriptHandler(
-                handlerName: 'FlutterChannel',
-                callback: (args) {
-                  if (args.isNotEmpty) {
-                    _handleJavaScriptMessage(args[0].toString());
-                  }
-                },
-              );
-            },
-            onLoadStart: (controller, url) {
-              setState(() => _isLoading = true);
-              // Limpiar errores reportados al iniciar nueva carga
-              _reportedErrors.clear();
-              
-              if (url.toString().contains('/login') ||
-                  url.toString().contains('/auth')) {
-                debugPrint(
-                  '⚠️ Redirigiendo al login - Token puede ser inválido',
-                );
-              }
-            },
-            onLoadStop: (controller, url) async {
-              setState(() => _isLoading = false);
-
-              if (url.toString().contains('/chaplain')) {
-                debugPrint('✅ Página de capellanía cargada correctamente');
-              } else if (url.toString().contains('/login') ||
-                  url.toString().contains('/auth')) {
-                debugPrint('❌ Error: Redirigido al login');
-              }
-
-              // Inyectar token en la página si es necesario
-              if (_authToken != null) {
-                _injectTokenIntoPage();
-              }
-            },
-            onReceivedError: (controller, request, error) {
-              setState(() => _isLoading = false);
-              
-              final errorKey = '${error.type}-${error.description}';
-              final url = request.url.toString();
-              
-              // Filtrar errores comunes de recursos externos que no afectan la funcionalidad
-              if (error.description.contains('ERR_BLOCKED_BY_ORB') ||
-                  error.description.contains('ERR_CONNECTION_REFUSED') ||
-                  error.description.contains('ERR_TIMEOUT') ||
-                  error.description.contains('ERR_NETWORK_CHANGED') ||
-                  error.description.contains('ERR_INTERNET_DISCONNECTED')) {
-                
-                // Solo registrar el error en debug, no mostrar diálogo
-                debugPrint('⚠️ Error de recurso externo (ignorado): ${error.type} - ${error.description} en $url');
-                return;
-              }
-              
-              // Para otros errores más críticos, mostrar solo una vez
-              if (!_reportedErrors.contains(errorKey)) {
-                _reportedErrors.add(errorKey);
-                debugPrint('❌ Error WebView crítico: ${error.type} - ${error.description} en $url');
-                
-                // Solo mostrar diálogo para errores que afecten la página principal
-                if (url.startsWith('$BASE_URL/') || url.isEmpty) {
-                  _showErrorDialog('WebView Error', 'Error loading page: ${error.description}');
-                }
-              }
-            },
-            shouldOverrideUrlLoading: (controller, navigationAction) async {
-              final url = navigationAction.request.url.toString();
-              final isMainFrame = navigationAction.isForMainFrame;
-
-              debugPrint('🔍 Navegación detectada: $url (MainFrame: $isMainFrame)');
-
-              // Permitir navegación dentro del dominio de la aplicación
-              if (url.startsWith('$BASE_URL/')) {
-                debugPrint('✅ Permitiendo navegación interna: $url');
-                return NavigationActionPolicy.ALLOW;
-              }
-
-              // Permitir específicamente recursos de Calendly (incluso navegación)
-              if (url.contains('calendly.com') || 
-                  url.contains('assets.calendly.com') ||
-                  url.contains('calendlyassets.com')) {
-                debugPrint('✅ Permitiendo recurso/navegación de Calendly: $url');
-                return NavigationActionPolicy.ALLOW;
-              }
-
-              // Permitir recursos externos (JS, CSS, fuentes, etc.) - no navegación
-              if (!isMainFrame && url.startsWith('https://') && 
-                  (url.contains('.js') || 
-                   url.contains('.css') || 
-                   url.contains('.woff') || 
-                   url.contains('.ttf') ||
-                   url.contains('.png') ||
-                   url.contains('.jpg') ||
-                   url.contains('.svg') ||
-                   url.contains('widget') ||
-                   url.contains('embed') ||
-                   url.contains('api'))) {
-                debugPrint('✅ Permitiendo recurso externo: $url');
-                return NavigationActionPolicy.ALLOW;
-              }
-
-              // Para enlaces externos que deben abrir en navegador (navegación de frame principal)
-              if (isMainFrame && (url.startsWith('https://') || url.startsWith('http://'))) {
-                debugPrint('🌐 Abriendo en navegador externo: $url');
-                // Abrir en el navegador externo
-                try {
-                  await controller.loadUrl(urlRequest: URLRequest(url: WebUri('about:blank')));
-                  // Usar url_launcher para abrir en navegador externo
-                  final Uri uri = Uri.parse(url);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                } catch (e) {
-                  debugPrint('❌ Error abriendo URL externa: $e');
-                }
-                return NavigationActionPolicy.CANCEL;
-              }
-
-              // Para otros tipos de navegación externa, permitir
-              if (url.startsWith('https://') || url.startsWith('http://')) {
-                debugPrint('✅ Permitiendo navegación externa: $url');
-                return NavigationActionPolicy.ALLOW;
-              }
-
-              // Bloquear protocolos no web
-              debugPrint('🚫 Bloqueando protocolo no web: $url');
-              return NavigationActionPolicy.CANCEL;
-            },
-            // Manejo de ventanas nuevas (enlaces target="_blank")
-            onCreateWindow: (controller, createWindowAction) async {
-              final url = createWindowAction.request.url.toString();
-              debugPrint('🪟 Solicitud de nueva ventana: $url');
-              
-              // Si es un enlace externo, abrirlo en el navegador
-              if (url.startsWith('https://') || url.startsWith('http://')) {
-                try {
-                  final Uri uri = Uri.parse(url);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                    debugPrint('✅ Enlace externo abierto en navegador: $url');
-                  }
-                } catch (e) {
-                  debugPrint('❌ Error abriendo enlace externo: $e');
-                }
-                return false; // No crear ventana en el WebView
-              }
-              
-              return true; // Permitir crear ventana para otros casos
-            },
-            onPermissionRequest: (controller, request) async {
-              return PermissionResponse(
-                resources: request.resources,
-                action: PermissionResponseAction.GRANT,
-              );
-            },
-          )
-          else if (_tokenLoaded && _authToken == null)
-            // Mostrar error si no hay token
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error, color: Colors.red, size: 64),
-                  const SizedBox(height: 16),
-                  const Text('Authentication Error', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  const Text('Please log in again', style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/auth'),
-                    child: const Text('Go to Login'),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          body: Stack(
+            children: [
+              // Solo mostrar WebView cuando el token esté cargado
+              if (_tokenLoaded && _authToken != null)
+                InAppWebView(
+                  key: const PageStorageKey('chaplaincyWebView'),
+                  initialUrlRequest: URLRequest(
+                    url: WebUri('$BASE_URL/chaplain/stages?auth_token=$_authToken'),
+                    headers: {
+                      'Authorization': 'Bearer $_authToken',
+                      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                      'User-Agent': 'NSCA-Daily-App/1.0',
+                      'Cache-Control': 'no-cache',
+                      'Pragma': 'no-cache',
+                    },
                   ),
-                ],
-              ),
-            ),
+                  initialSettings: InAppWebViewSettings(
+                    javaScriptEnabled: true,
+                    domStorageEnabled: true,
+                    allowFileAccessFromFileURLs: true,
+                    allowUniversalAccessFromFileURLs: true,
+                    mediaPlaybackRequiresUserGesture: false,
+                    allowsInlineMediaPlayback: true,
+                    userAgent: 'Mozilla/5.0 (Linux; Android 10; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.162 Mobile Safari/537.36',
+                    allowFileAccess: true,
+                    supportZoom: false,
+                    useOnLoadResource: true,
+                    mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+                    useShouldOverrideUrlLoading: true,
+                    clearCache: false,
+                    cacheEnabled: true,
+                    transparentBackground: false,
+                    thirdPartyCookiesEnabled: true,
+                    hardwareAcceleration: true,
+                    supportMultipleWindows: true,
+                    useWideViewPort: true,
+                    loadWithOverviewMode: true,
+                    builtInZoomControls: false,
+                    displayZoomControls: false,
+                    // Configuraciones adicionales para enlaces externos
+                    javaScriptCanOpenWindowsAutomatically: true,
+                  ),
+                  onWebViewCreated: (controller) {
+                    _controller = controller;
+                    
+                    debugPrint('🌐 Cargando página de capellanía: $BASE_URL/chaplain/stages');
+                    debugPrint('🔐 Autenticación JWT activa con token: ${_authToken?.substring(0, 20)}...');
 
-          // Indicador de carga
-          if (_isLoading || !_tokenLoaded)
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: kBackgroundColor.withValues(alpha: 0.8),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      color: kPrimaryColor,
-                      backgroundColor: kCardColor,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      !_tokenLoaded 
-                          ? 'Loading authentication...' 
-                          : 'Loading chaplain certification process...',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                    // Agregar JavaScript channel
+                    _controller!.addJavaScriptHandler(
+                      handlerName: 'FlutterChannel',
+                      callback: (args) {
+                        if (args.isNotEmpty) {
+                          _handleJavaScriptMessage(args[0].toString());
+                        }
+                      },
+                    );
+                  },
+                  onLoadStart: (controller, url) {
+                    setState(() => _isLoading = true);
+                    // Limpiar errores reportados al iniciar nueva carga
+                    _reportedErrors.clear();
+                    
+                    if (url.toString().contains('/login') ||
+                        url.toString().contains('/auth')) {
+                      debugPrint(
+                        '⚠️ Redirigiendo al login - Token puede ser inválido',
+                      );
+                    }
+                  },
+                  onLoadStop: (controller, url) async {
+                    setState(() => _isLoading = false);
+
+                    if (url.toString().contains('/chaplain')) {
+                      debugPrint('✅ Página de capellanía cargada correctamente');
+                    } else if (url.toString().contains('/login') ||
+                        url.toString().contains('/auth')) {
+                      debugPrint('❌ Error: Redirigido al login');
+                    }
+
+                    // Inyectar token en la página si es necesario
+                    if (_authToken != null) {
+                      _injectTokenIntoPage();
+                    }
+                  },
+                  onReceivedError: (controller, request, error) {
+                    setState(() => _isLoading = false);
+                    
+                    final errorKey = '${error.type}-${error.description}';
+                    final url = request.url.toString();
+                    
+                    // Filtrar errores comunes de recursos externos que no afectan la funcionalidad
+                    if (error.description.contains('ERR_BLOCKED_BY_ORB') ||
+                        error.description.contains('ERR_CONNECTION_REFUSED') ||
+                        error.description.contains('ERR_TIMEOUT') ||
+                        error.description.contains('ERR_NETWORK_CHANGED') ||
+                        error.description.contains('ERR_INTERNET_DISCONNECTED')) {
+                      
+                      // Solo registrar el error en debug, no mostrar diálogo
+                      debugPrint('⚠️ Error de recurso externo (ignorado): ${error.type} - ${error.description} en $url');
+                      return;
+                    }
+                    
+                    // Para otros errores más críticos, mostrar solo una vez
+                    if (!_reportedErrors.contains(errorKey)) {
+                      _reportedErrors.add(errorKey);
+                      debugPrint('❌ Error WebView crítico: ${error.type} - ${error.description} en $url');
+                      
+                      // Solo mostrar diálogo para errores que afecten la página principal
+                      if (url.startsWith('$BASE_URL/') || url.isEmpty) {
+                        _showErrorDialog('WebView Error', 'Error loading page: ${error.description}');
+                      }
+                    }
+                  },
+                  shouldOverrideUrlLoading: (controller, navigationAction) async {
+                    final url = navigationAction.request.url.toString();
+                    final isMainFrame = navigationAction.isForMainFrame;
+
+                    debugPrint('🔍 Navegación detectada: $url (MainFrame: $isMainFrame)');
+
+                    // Permitir navegación dentro del dominio de la aplicación
+                    if (url.startsWith('$BASE_URL/')) {
+                      debugPrint('✅ Permitiendo navegación interna: $url');
+                      return NavigationActionPolicy.ALLOW;
+                    }
+
+                    // Permitir específicamente recursos de Calendly (incluso navegación)
+                    if (url.contains('calendly.com') || 
+                        url.contains('assets.calendly.com') ||
+                        url.contains('calendlyassets.com')) {
+                      debugPrint('✅ Permitiendo recurso/navegación de Calendly: $url');
+                      return NavigationActionPolicy.ALLOW;
+                    }
+
+                    // Permitir recursos externos (JS, CSS, fuentes, etc.) - no navegación
+                    if (!isMainFrame && url.startsWith('https://') && 
+                        (url.contains('.js') || 
+                         url.contains('.css') || 
+                         url.contains('.woff') || 
+                         url.contains('.ttf') ||
+                         url.contains('.png') ||
+                         url.contains('.jpg') ||
+                         url.contains('.svg') ||
+                         url.contains('widget') ||
+                         url.contains('embed') ||
+                         url.contains('api'))) {
+                      debugPrint('✅ Permitiendo recurso externo: $url');
+                      return NavigationActionPolicy.ALLOW;
+                    }
+
+                    // Para enlaces externos que deben abrir en navegador (navegación de frame principal)
+                    if (isMainFrame && (url.startsWith('https://') || url.startsWith('http://'))) {
+                      debugPrint('🌐 Abriendo en navegador externo: $url');
+                      // Abrir en el navegador externo
+                      try {
+                        await controller.loadUrl(urlRequest: URLRequest(url: WebUri('about:blank')));
+                        // Usar url_launcher para abrir en navegador externo
+                        final Uri uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      } catch (e) {
+                        debugPrint('❌ Error abriendo URL externa: $e');
+                      }
+                      return NavigationActionPolicy.CANCEL;
+                    }
+
+                    // Para otros tipos de navegación externa, permitir
+                    if (url.startsWith('https://') || url.startsWith('http://')) {
+                      debugPrint('✅ Permitiendo navegación externa: $url');
+                      return NavigationActionPolicy.ALLOW;
+                    }
+
+                    // Bloquear protocolos no web
+                    debugPrint('🚫 Bloqueando protocolo no web: $url');
+                    return NavigationActionPolicy.CANCEL;
+                  },
+                  // Manejo de ventanas nuevas (enlaces target="_blank")
+                  onCreateWindow: (controller, createWindowAction) async {
+                    final url = createWindowAction.request.url.toString();
+                    debugPrint('🪟 Solicitud de nueva ventana: $url');
+                    
+                    // Si es un enlace externo, abrirlo en el navegador
+                    if (url.startsWith('https://') || url.startsWith('http://')) {
+                      try {
+                        final Uri uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          debugPrint('✅ Enlace externo abierto en navegador: $url');
+                        }
+                      } catch (e) {
+                        debugPrint('❌ Error abriendo enlace externo: $e');
+                      }
+                      return false; // No crear ventana en el WebView
+                    }
+                    
+                    return true; // Permitir crear ventana para otros casos
+                  },
+                  onPermissionRequest: (controller, request) async {
+                    return PermissionResponse(
+                      resources: request.resources,
+                      action: PermissionResponseAction.GRANT,
+                    );
+                  },
+                )
+              else if (_tokenLoaded && _authToken == null)
+                // Mostrar error si no hay token
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error, color: kRedColor, size: 64),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Authentication Error', 
+                        style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.getTextColor(context),
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        'Please log in again', 
+                        style: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pushReplacementNamed(context, '/auth'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: kPrimaryColor,
+                          foregroundColor: AppColors.getTextColor(context),
+                        ),
+                        child: const Text('Go to Login'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-        ],
-      ),
+
+              // Indicador de carga
+              if (_isLoading || !_tokenLoaded)
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: AppColors.getBackgroundColor(context).withValues(alpha: 0.8),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          color: kPrimaryColor,
+                          backgroundColor: AppColors.getCardColor(context),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          !_tokenLoaded 
+                              ? 'Loading authentication...' 
+                              : 'Loading chaplain certification process...',
+                          style: TextStyle(
+                            color: AppColors.getTextColor(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

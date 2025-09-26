@@ -3,6 +3,7 @@
 import '../constants.dart';
 import '../models/common_functions.dart';
 import '../providers/auth.dart';
+import '../providers/theme_provider.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/signup_screen.dart';
 import '../widgets/string_extension.dart';
@@ -57,23 +58,23 @@ class _AuthScreenState extends State<AuthScreen> {
   InputDecoration getInputDecoration(String hintext, IconData iconData, {bool isPassword = false}) {
     return InputDecoration(
       labelText: hintext,
-      labelStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      labelStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
         fontSize: 14,
       ),
       hintText: 'Enter your $hintext',
-      hintStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      hintStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
       ),
       filled: true,
-      fillColor: kBackgroundColor,
+      fillColor: AppColors.getBackgroundColor(context),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -164,22 +165,24 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        key: scaffoldKey,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        backgroundColor: kBackgroundColor,
-        title: const Text(
-          'Public Login',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: kTextColor,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: AppBar(
+            key: scaffoldKey,
+            elevation: 0,
+            iconTheme: IconThemeData(color: AppColors.getTextColor(context)),
+            backgroundColor: AppColors.getCardColor(context),
+            title: Text(
+              'Public Login',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.getTextColor(context),
+              ),
+            ),
           ),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -191,9 +194,9 @@ class _AuthScreenState extends State<AuthScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Column(
                 children: [
@@ -210,20 +213,20 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Welcome Back',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: kTextColor,
+                      color: AppColors.getTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Sign in to continue your learning journey',
                     style: TextStyle(
                       fontSize: 16,
-                      color: kTextSecondaryColor,
+                      color: AppColors.getTextSecondaryColor(context),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -238,30 +241,30 @@ class _AuthScreenState extends State<AuthScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Form(
                 key: globalFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Login Information',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 24),
                     
                     // Email Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: getInputDecoration(
                         'Email Address',
@@ -286,29 +289,29 @@ class _AuthScreenState extends State<AuthScreen> {
                     
                     // Password Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        labelStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                           fontSize: 14,
                         ),
                         hintText: 'Enter your password',
-                        hintStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        hintStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                         ),
                         filled: true,
-                        fillColor: kBackgroundColor,
+                        fillColor: AppColors.getBackgroundColor(context),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -334,7 +337,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             hidePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: kTextSecondaryColor,
+                            color: AppColors.getTextSecondaryColor(context),
                           ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
@@ -375,12 +378,12 @@ class _AuthScreenState extends State<AuthScreen> {
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Remember me',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: kTextColor,
+                            color: AppColors.getTextColor(context),
                           ),
                         ),
                         const Spacer(),
@@ -411,7 +414,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         onPressed: _isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPrimaryColor,
-                          foregroundColor: kBackgroundColor,
+                          foregroundColor: kTextColorLight,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -422,7 +425,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                  color: kBackgroundColor,
+                                  color: kTextColorLight,
                                   strokeWidth: 2.5,
                                 ),
                               )
@@ -447,17 +450,17 @@ class _AuthScreenState extends State<AuthScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Don't have an account? ",
                     style: TextStyle(
-                      color: kTextSecondaryColor,
+                      color: AppColors.getTextSecondaryColor(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                     ),
@@ -484,6 +487,8 @@ class _AuthScreenState extends State<AuthScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

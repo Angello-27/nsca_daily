@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../providers/auth.dart';
+import '../providers/theme_provider.dart';
 import 'auth_screen.dart';
 import 'device_verifcation.dart';
 
@@ -135,23 +136,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
   InputDecoration getInputDecoration(String hintext, IconData iconData, {bool isPassword = false}) {
     return InputDecoration(
       labelText: hintext,
-      labelStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      labelStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
         fontSize: 14,
       ),
       hintText: 'Enter your $hintext',
-      hintStyle: const TextStyle(
-        color: kTextSecondaryColor,
+      hintStyle: TextStyle(
+        color: AppColors.getTextSecondaryColor(context),
       ),
       filled: true,
-      fillColor: kBackgroundColor,
+      fillColor: AppColors.getBackgroundColor(context),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: kBorderColor),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -175,22 +176,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        key: scaffoldKey,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        backgroundColor: kBackgroundColor,
-        title: const Text(
-          'Create Account',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: kTextColor,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: AppBar(
+            key: scaffoldKey,
+            elevation: 0,
+            iconTheme: IconThemeData(color: AppColors.getTextColor(context)),
+            backgroundColor: AppColors.getCardColor(context),
+            title: Text(
+              'Create Account',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.getTextColor(context),
+              ),
+            ),
           ),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -202,9 +205,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Column(
                 children: [
@@ -221,21 +224,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'NSCA Chaplain Certification',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: kTextColor,
+                      color: AppColors.getTextColor(context),
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Create your free account to get started',
                     style: TextStyle(
                       fontSize: 16,
-                      color: kTextSecondaryColor,
+                      color: AppColors.getTextSecondaryColor(context),
                       fontWeight: FontWeight.w400,
                     ),
                     textAlign: TextAlign.center,
@@ -251,30 +254,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Form(
                 key: globalFormKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Account Information',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 24),
                     
                     // First Name Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: getInputDecoration(
                         'First Name',
@@ -298,9 +301,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     // Last Name Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: getInputDecoration(
                         'Last Name',
@@ -324,9 +327,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     // Email Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: getInputDecoration(
                         'Email Address',
@@ -353,9 +356,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     // Repeat Email Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: getInputDecoration(
                         'Repeat Email',
@@ -382,29 +385,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     // Password Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        labelStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                           fontSize: 14,
                         ),
                         hintText: 'Enter your password',
-                        hintStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        hintStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                         ),
                         filled: true,
-                        fillColor: kBackgroundColor,
+                        fillColor: AppColors.getBackgroundColor(context),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -429,7 +432,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             hidePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: kTextSecondaryColor,
+                            color: AppColors.getTextSecondaryColor(context),
                           ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
@@ -459,29 +462,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     
                     // Repeat Password Field
                     TextFormField(
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       decoration: InputDecoration(
                         labelText: 'Repeat Password',
-                        labelStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                           fontSize: 14,
                         ),
                         hintText: 'Repeat your password',
-                        hintStyle: const TextStyle(
-                          color: kTextSecondaryColor,
+                        hintStyle: TextStyle(
+                          color: AppColors.getTextSecondaryColor(context),
                         ),
                         filled: true,
-                        fillColor: kBackgroundColor,
+                        fillColor: AppColors.getBackgroundColor(context),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: kBorderColor),
+                          borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -506,7 +509,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             hideRepeatPassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: kTextSecondaryColor,
+                            color: AppColors.getTextSecondaryColor(context),
                           ),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
@@ -540,9 +543,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Expanded(
                           flex: 2,
                           child: TextFormField(
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: kTextColor,
+                              color: AppColors.getTextColor(context),
                             ),
                             decoration: getInputDecoration(
                               'Phone Number',
@@ -570,19 +573,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             isExpanded: true,
                             decoration: InputDecoration(
                               labelText: 'Type',
-                              labelStyle: const TextStyle(
-                                color: kTextSecondaryColor,
+                              labelStyle: TextStyle(
+                                color: AppColors.getTextSecondaryColor(context),
                                 fontSize: 14,
                               ),
                               filled: true,
-                              fillColor: kBackgroundColor,
+                              fillColor: AppColors.getBackgroundColor(context),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: kBorderColor),
+                                borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: kBorderColor),
+                                borderSide: BorderSide(color: AppColors.getBorderColor(context)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -597,7 +600,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 child: Text(
                                   value,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 14, color: kTextColor),
+                                  style: TextStyle(fontSize: 14, color: AppColors.getTextColor(context)),
                                 ),
                               );
                             }).toList(),
@@ -631,9 +634,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: kTextSecondaryColor,
+                                color: AppColors.getTextSecondaryColor(context),
                               ),
                               children: [
                                 const TextSpan(text: 'By creating an account, you agree to our '),
@@ -667,7 +670,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         onPressed: _isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kPrimaryColor,
-                          foregroundColor: kBackgroundColor,
+                          foregroundColor: kTextColorLight,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -678,7 +681,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 width: 24,
                                 height: 24,
                                 child: CircularProgressIndicator(
-                                  color: kBackgroundColor,
+                                  color: kTextColorLight,
                                   strokeWidth: 2.5,
                                 ),
                               )
@@ -703,17 +706,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: kCardColor,
+                color: AppColors.getCardColor(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: kBorderColor),
+                border: Border.all(color: AppColors.getBorderColor(context)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Already have an account? ",
                     style: TextStyle(
-                      color: kTextSecondaryColor,
+                      color: AppColors.getTextSecondaryColor(context),
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                     ),
@@ -739,6 +742,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

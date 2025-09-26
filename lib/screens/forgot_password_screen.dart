@@ -2,8 +2,10 @@
 
 import '../models/common_functions.dart';
 import '../models/update_user_model.dart';
+import '../providers/theme_provider.dart';
 import '../screens/auth_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
 import 'package:http/http.dart' as http;
 
@@ -62,30 +64,47 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   InputDecoration getInputDecoration(String hintext, IconData iconData) {
     return InputDecoration(
-      enabledBorder: kDefaultInputBorder,
-      focusedBorder: kDefaultFocusInputBorder,
-      border: kDefaultInputBorder,
-      focusedErrorBorder: kDefaultFocusErrorBorder,
-      errorBorder: kDefaultFocusErrorBorder,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 2),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.getBorderColor(context)),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kRedColor, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kRedColor),
+      ),
       filled: true,
-      prefixIcon: Icon(iconData, color: kTextSecondaryColor),
-      hintStyle: const TextStyle(color: kTextSecondaryColor, fontSize: 14),
+      prefixIcon: Icon(iconData, color: AppColors.getTextSecondaryColor(context)),
+      hintStyle: TextStyle(color: AppColors.getTextSecondaryColor(context), fontSize: 14),
       hintText: hintext,
-      fillColor: kCardColor,
+      fillColor: AppColors.getCardColor(context),
       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        key: scaffoldKey,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: kTextColor),
-        backgroundColor: kBackgroundColor,
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: AppBar(
+            key: scaffoldKey,
+            elevation: 0,
+            iconTheme: IconThemeData(color: AppColors.getTextColor(context)),
+            backgroundColor: AppColors.getCardColor(context),
+          ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -98,9 +117,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: kCardColor,
+                  color: AppColors.getCardColor(context),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kBorderColor),
+                  border: Border.all(color: AppColors.getBorderColor(context)),
                 ),
                 child: Column(
                   children: [
@@ -117,12 +136,12 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       'Forgot Password',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
-                        color: kTextColor,
+                        color: AppColors.getTextColor(context),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -137,11 +156,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Enter your email address and we\'ll send you a link to reset your password',
                       style: TextStyle(
                         fontSize: 16, 
-                        color: kTextSecondaryColor,
+                        color: AppColors.getTextSecondaryColor(context),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -156,26 +175,26 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: kCardColor,
+                  color: AppColors.getCardColor(context),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kBorderColor),
+                  border: Border.all(color: AppColors.getBorderColor(context)),
                 ),
                 child: Form(
                   key: globalFormKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Email Address',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: kTextColor,
+                          color: AppColors.getTextColor(context),
                         ),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        style: const TextStyle(fontSize: 16, color: kTextColor),
+                        style: TextStyle(fontSize: 16, color: AppColors.getTextColor(context)),
                         decoration: getInputDecoration(
                           'Enter your email address',
                           Icons.email_outlined,
@@ -202,7 +221,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             ? Center(
                                 child: CircularProgressIndicator(
                                   color: kPrimaryColor,
-                                  backgroundColor: kCardColor,
+                                  backgroundColor: AppColors.getCardColor(context),
                                 ),
                               )
                             : MaterialButton(
@@ -216,7 +235,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                   'Send Reset Link',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: kBackgroundColor,
+                                    color: kTextColorLight,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -234,17 +253,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: kCardColor,
+                  color: AppColors.getCardColor(context),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kBorderColor),
+                  border: Border.all(color: AppColors.getBorderColor(context)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Remember your password? ',
                       style: TextStyle(
-                        color: kTextSecondaryColor,
+                        color: AppColors.getTextSecondaryColor(context),
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -269,6 +288,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }

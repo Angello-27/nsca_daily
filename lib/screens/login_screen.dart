@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import './auth_screen.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import '../providers/theme_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -68,11 +70,15 @@ class _LoginScreenState extends State<LoginScreen> {
         _connectionStatus.isNotEmpty &&
         _connectionStatus.first != ConnectivityResult.none;
 
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      body: !hasConnection
-          ? _buildNoConnectionView(context)
-          : _buildLoginView(context),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          body: !hasConnection
+              ? _buildNoConnectionView(context)
+              : _buildLoginView(context),
+        );
+      },
     );
   }
 
@@ -88,9 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 24),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: kCardColor,
+              color: AppColors.getCardColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: kBorderColor),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -107,21 +113,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'No Internet Connection',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: kTextColor,
+                    color: AppColors.getTextColor(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Please check your Internet connection and try again',
                   style: TextStyle(
                     fontSize: 16, 
-                    color: kTextSecondaryColor,
+                    color: AppColors.getTextSecondaryColor(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -145,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: kCardColor,
+              color: AppColors.getCardColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: kBorderColor),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
             child: Column(
               children: [
@@ -164,12 +170,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'NSCA Academy',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,
-                    color: kTextColor,
+                    color: AppColors.getTextColor(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -184,11 +190,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Please sign in to access your personalized content and continue your learning journey',
                   style: TextStyle(
                     fontSize: 16, 
-                    color: kTextSecondaryColor,
+                    color: AppColors.getTextSecondaryColor(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -220,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: kBackgroundColor,
+                      color: kTextColorLight,
                     ),
                   ),
                 ),
@@ -234,16 +240,16 @@ class _LoginScreenState extends State<LoginScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
+              Text(
                 'Don\'t have an account? ',
                 style: TextStyle(
                   fontSize: 14,
-                  color: kTextSecondaryColor,
+                  color: AppColors.getTextSecondaryColor(context),
                 ),
               ),
               GestureDetector(
                 onTap: () {
-                  Navigator.of(context).pushReplacementNamed('/signup');
+                  Navigator.of(context).pushNamed('/signup');
                 },
                 child: const Text(
                   'Sign Up',
@@ -265,9 +271,9 @@ class _LoginScreenState extends State<LoginScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: kCardColor,
+              color: AppColors.getCardColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: kBorderColor),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -298,9 +304,9 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: kTextSecondaryColor,
+            color: AppColors.getTextSecondaryColor(context),
             fontWeight: FontWeight.w500,
           ),
         ),
