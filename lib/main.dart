@@ -3,6 +3,7 @@ import 'package:nsca_daily/providers/daily_report.dart';
 
 import './providers/bundles.dart';
 import './providers/course_forum.dart';
+import './providers/theme_provider.dart';
 import './screens/account_remove_screen.dart';
 import './screens/auth_screen_private.dart';
 import './screens/downloaded_course_list.dart';
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (ctx) => ThemeProvider()),
         ChangeNotifierProvider(create: (ctx) => Auth()),
         ChangeNotifierProvider(create: (ctx) => Categories()),
         ChangeNotifierProxyProvider<Auth, Courses>(
@@ -77,32 +79,55 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (ctx) => CourseForum()),
         ChangeNotifierProvider(create: (_) => DailyReportProvider()),
       ],
-      child: Consumer<Auth>(
-        builder:
-            (ctx, auth, _) => MaterialApp(
-              // title: 'Cloud Computing Courses and Cyber Security Courses',
-              title: 'Academy App',
-              theme: ThemeData(
-                fontFamily: 'google_sans',
-                colorScheme: const ColorScheme.dark(
-                  primary: kPrimaryColor,
-                  secondary: kPrimaryColor,
-                  surface: kBackgroundColor,
-                  onSurface: kTextColor,
-                  onPrimary: kBackgroundColor,
-                ),
-                scaffoldBackgroundColor: kBackgroundColor,
-                appBarTheme: const AppBarTheme(
-                  backgroundColor: kBackgroundColor,
-                  foregroundColor: kTextColor,
-                  elevation: 0,
-                ),
-                bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-                  backgroundColor: kBackgroundColor,
-                  selectedItemColor: kPrimaryColor,
-                  unselectedItemColor: kTextSecondaryColor,
-                ),
-              ),
+      child: Consumer2<ThemeProvider, Auth>(
+        builder: (ctx, themeProvider, auth, _) => MaterialApp(
+          // title: 'Cloud Computing Courses and Cyber Security Courses',
+          title: 'Academy App',
+          themeMode: themeProvider.themeMode,
+          theme: ThemeData(
+            fontFamily: 'google_sans',
+            brightness: Brightness.light,
+            colorScheme: const ColorScheme.light(
+              primary: kPrimaryColor,
+              secondary: kPrimaryColor,
+              surface: kCardColorLight,
+              onSurface: kTextColorLight,
+              onPrimary: kTextColorLight,
+            ),
+            scaffoldBackgroundColor: kBackgroundColorLight,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: kCardColorLight,
+              foregroundColor: kTextColorLight,
+              elevation: 0,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: kCardColorLight,
+              selectedItemColor: kPrimaryColor,
+              unselectedItemColor: kTextSecondaryColorLight,
+            ),
+          ),
+          darkTheme: ThemeData(
+            fontFamily: 'google_sans',
+            brightness: Brightness.dark,
+            colorScheme: const ColorScheme.dark(
+              primary: kPrimaryColor,
+              secondary: kPrimaryColor,
+              surface: kCardColorDark,
+              onSurface: kTextColorDark,
+              onPrimary: kTextColorDark,
+            ),
+            scaffoldBackgroundColor: kBackgroundColorDark,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: kCardColorDark,
+              foregroundColor: kTextColorDark,
+              elevation: 0,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: kCardColorDark,
+              selectedItemColor: kPrimaryColor,
+              unselectedItemColor: kTextSecondaryColorDark,
+            ),
+          ),
               debugShowCheckedModeBanner: false,
               home: const SplashScreen(),
               routes: {

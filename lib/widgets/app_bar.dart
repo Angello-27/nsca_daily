@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import '../screens/courses_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import '../models/app_logo.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
-import 'search_widget.dart';
+import '../providers/theme_provider.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   @override
@@ -20,9 +20,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
-  final bool _isSearching = false;
   final _controller = StreamController<AppLogo>();
-  final searchController = TextEditingController();
 
   fetchMyLogo() async {
     var url = '$BASE_URL/api/app_logo';
@@ -32,38 +30,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
         var logo = AppLogo.fromJson(jsonDecode(response.body));
         _controller.add(logo);
       }
-      // debugPrint(extractedData);
     } catch (error) {
       rethrow;
     }
-  }
-
-  void _handleSubmitted(String value) {
-    final searchText = searchController.text;
-    if (searchText.isEmpty) {
-      return;
-    }
-
-    searchController.clear();
-    Navigator.of(context).pushNamed(
-      CoursesScreen.routeName,
-      arguments: {
-        'category_id': null,
-        'seacrh_query': searchText,
-        'type': CoursesPageData.Search,
-      },
-    );
-    // debugPrint(searchText);
-  }
-
-  void _showSearchModal(BuildContext ctx) {
-    showModalBottomSheet(
-      context: ctx,
-      isScrollControlled: true,
-      builder: (_) {
-        return const SearchWidget();
-      },
-    );
   }
 
   @override
@@ -76,52 +45,60 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 0,
-      iconTheme: const IconThemeData(
-        color: kTextColor,
+      iconTheme: IconThemeData(
+        color: AppColors.getTextColor(context),
       ),
-      leading: StreamBuilder<AppLogo>(
-        stream: _controller.stream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container();
-          } else {
-            if (snapshot.error != null) {
-              return const Text("Error Occured");
-            } else {
-              return Transform.scale(
-                scale: 3.5,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: CachedNetworkImage(
-                    alignment: Alignment.center,
-                    imageUrl: snapshot.data!.darkLogo.toString(),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              );
-            }
-          }
+      leading: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return StreamBuilder<AppLogo>(
+            stream: _controller.stream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container();
+              } else {
+                if (snapshot.error != null) {
+                  return Text(
+                    "Error Occured",
+                    style: TextStyle(color: AppColors.getTextColor(context)),
+                  );
+                } else {
+                  // Use darkLogo for light theme and lightLogo for dark theme
+                  final logoUrl = themeProvider.isDarkMode 
+                      ? snapshot.data!.lightLogo.toString()
+                      : snapshot.data!.darkLogo.toString();
+                      
+                  return Transform.scale(
+                    scale: 3.5,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 25.0),
+                      child: CachedNetworkImage(
+                        alignment: Alignment.center,
+                        imageUrl: logoUrl,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+          );
         },
       ),
-      title:
-          !_isSearching
-              ? Container()
-              : Card(
-                color: Colors.white,
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Search Here',
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  ),
-                  controller: searchController,
-                  onFieldSubmitted: _handleSubmitted,
-                ),
-              ),
-      backgroundColor: kBackgroundColor,
+      backgroundColor: AppColors.getCardColor(context),
       actions: <Widget>[
-        IconButton(
-          icon: const Icon(Icons.search, color: kTextColor),
-          onPressed: () => _showSearchModal(context),
+        Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return IconButton(
+              icon: Icon(
+                themeProvider.themeIcon,
+                color: AppColors.getTextColor(context),
+              ),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+              tooltip: 'Switch Theme (${themeProvider.themeModeName})',
+            );
+          },
         ),
       ],
     );

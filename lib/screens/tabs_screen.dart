@@ -1,9 +1,10 @@
 import 'dart:convert';
 import '../widgets/app_bar.dart';
-//import '../widgets/filter_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
+import '../providers/theme_provider.dart';
 import 'account_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
@@ -98,53 +99,44 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: const CustomAppBar(),
-      body: _pages[_selectedPageIndex],
-      /*floatingActionButton:
-          _selectedPageIndex != 3
-              ? FloatingActionButton(
-                onPressed: () => _showFilterModal(context),
-                backgroundColor: kDarkButtonBg,
-                child: const Icon(Icons.filter_list),
-              )
-              : null,*/
-        bottomNavigationBar: BottomNavigationBar(
-          onTap: _selectPage,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.verified_user_outlined),
-              activeIcon: Icon(Icons.verified_user),
-              label: 'Chaplaincy',
-            ),
-            // BottomNavigationBarItem(
-            //   icon: Icon(Icons.school_outlined),
-            //   activeIcon: Icon(Icons.school),
-            //   label: 'Curriculum',
-            // ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.aod_outlined),
-              activeIcon: Icon(Icons.aod_rounded),
-              label: 'Daily report',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle_outlined),
-              activeIcon: Icon(Icons.account_circle),
-              label: 'Account',
-            ),
-          ],
-        backgroundColor: kBackgroundColor,
-        unselectedItemColor: kTextSecondaryColor,
-        selectedItemColor: kPrimaryColor,
-        currentIndex: _selectedPageIndex,
-        type: BottomNavigationBarType.fixed,
-      ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.getBackgroundColor(context),
+          appBar: const CustomAppBar(),
+          body: _pages[_selectedPageIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            onTap: _selectPage,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.verified_user_outlined),
+                activeIcon: Icon(Icons.verified_user),
+                label: 'Chaplaincy',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.aod_outlined),
+                activeIcon: Icon(Icons.aod_rounded),
+                label: 'Daily report',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_circle_outlined),
+                activeIcon: Icon(Icons.account_circle),
+                label: 'Account',
+              ),
+            ],
+            backgroundColor: AppColors.getCardColor(context),
+            unselectedItemColor: AppColors.getTextSecondaryColor(context),
+            selectedItemColor: kPrimaryColor,
+            currentIndex: _selectedPageIndex,
+            type: BottomNavigationBarType.fixed,
+          ),
+        );
+      },
     );
   }
 }
