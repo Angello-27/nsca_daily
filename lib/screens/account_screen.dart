@@ -343,9 +343,18 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Manage your account settings',
+                      user.email ?? '',
                       style: TextStyle(
                         fontSize: 16,
+                        color: kPrimaryColor,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Manage your account settings',
+                      style: TextStyle(
+                        fontSize: 14,
                         color: AppColors.getTextSecondaryColor(context),
                         fontWeight: FontWeight.w400,
                       ),
