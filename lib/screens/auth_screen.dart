@@ -465,7 +465,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   InkWell(
                     onTap: () {
                       HapticFeedback.lightImpact();
-                      Navigator.of(context).pushNamed(SignUpScreen.routeName);
+                      Navigator.of(context).pushReplacementNamed(SignUpScreen.routeName);
                     },
                     child: const Text(
                       'Sign Up',

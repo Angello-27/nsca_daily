@@ -230,6 +230,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 24),
 
+          // Helpful text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Don\'t have an account? ',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: kTextSecondaryColor,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushReplacementNamed('/signup');
+                },
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: kPrimaryColor,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
           // Features Section
           Container(
             width: double.infinity,
