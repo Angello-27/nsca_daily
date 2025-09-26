@@ -1,4 +1,4 @@
-package com.example.nsca_daily
+package com.nsca.daily
 
 import io.flutter.embedding.android.FlutterActivity
 
